@@ -1,0 +1,62 @@
+{% extends 'layouts/dashboard_base.html' %}
+
+{% block title %}Visitor Ledger | SocietyConnect{% endblock %}
+
+{% block content %}
+<div class="table-container">
+    <div class="table-header-row">
+        <div>
+            <h1 class="table-title">Visitor Ledger</h1>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Full list of past and active checked-in visitors</p>
+        </div>
+        <a href="{{ url_for('visitor.add_visitor') }}" class="btn btn-primary">Log Visitor Entry</a>
+    </div>
+    
+    <table class="custom-table">
+        <thead>
+            <tr>
+                <th>Visitor Details</th>
+                <th>Destination</th>
+                <th>Purpose</th>
+                <th>In / Out Timestamps</th>
+                <th>Vehicle</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for visitor in visitors %}
+                <tr>
+                    <td>
+                        <strong style="display: block;">{{ visitor.name }}</strong>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">{{ visitor.phone }}</span>
+                    </td>
+                    <td>{{ visitor.flat.building.name }} - {{ visitor.flat.flat_number }}</td>
+                    <td>{{ visitor.purpose }}</td>
+                    <td>
+                        <div style="font-size: 0.85rem;">
+                            <strong>In:</strong> {{ visitor.check_in_time.strftime('%Y-%m-%d %H:%M') }}
+                        </div>
+                        {% if visitor.check_out_time %}
+                            <div style="font-size: 0.85rem; color: var(--text-muted);">
+                                <strong>Out:</strong> {{ visitor.check_out_time.strftime('%Y-%m-%d %H:%M') }}
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td>{{ visitor.vehicle_number or 'N/A' }}</td>
+                    <td>
+                        {% if visitor.status == 'Checked-In' %}
+                            <span class="badge badge-warning">Checked-In</span>
+                        {% else %}
+                            <span class="badge badge-success">Checked-Out</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">No visitor entries logged.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

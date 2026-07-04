@@ -1,0 +1,109 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Resident Registration | SocietyConnect{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card" style="max-width: 500px;">
+        <div class="auth-header">
+            <h2 class="auth-title">Resident Registry</h2>
+            <p class="auth-subtitle">Register to link your account to your flat</p>
+        </div>
+        
+        <!-- Flash messages inside card -->
+        {% include 'layouts/flash_messages.html' %}
+
+        <form action="{{ url_for('auth.register') }}" method="POST">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" id="username" name="username" class="form-control" placeholder="Choose username" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="name@domain.com" required>
+                </div>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="password-container">
+                        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required autocomplete="new-password">
+                        <button type="button" class="password-toggle" onclick="togglePasswordVisibility('password', this)">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone" class="form-label">Phone Number</label>
+                    <div class="phone-input-container">
+                        <select name="country_code" class="form-control form-select phone-country-code" required>
+                            <option value="+91" selected>+91 (IN)</option>
+                            <option value="+1">+1 (US)</option>
+                            <option value="+44">+44 (UK)</option>
+                            <option value="+971">+971 (AE)</option>
+                            <option value="+61">+61 (AU)</option>
+                            <option value="+65">+65 (SG)</option>
+                        </select>
+                        <input type="tel" id="phone" name="phone" class="form-control" placeholder="10-digit phone number" pattern="[0-9]{10}" title="Please enter a valid 10-digit phone number" maxlength="10" required>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="resident_type" class="form-label">Resident Type</label>
+                <select id="resident_type" name="resident_type" class="form-control form-select" required>
+                    <option value="Tenant">Tenant</option>
+                    <option value="Owner">Owner</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="emergency_contact" class="form-label">Emergency Contact Name & Phone</label>
+                <input type="text" id="emergency_contact" name="emergency_contact" class="form-control" placeholder="e.g. Spouse: 9999999999" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Submit Registration</button>
+        </form>
+        
+        <div class="auth-footer">
+            <span>Already registered?</span>
+            <a href="{{ url_for('auth.login') }}">Login Here</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 113.67 3.68m-5.496-3.68L4 22m16-12a10.025 10.025 0 01-4.132 5.471m-.83-5.242a3 3 0 01-1.603-1.602L20 2" />
+            </svg>
+        `;
+    } else {
+        input.type = 'password';
+        btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+        `;
+    }
+}
+</script>
+{% endblock %}

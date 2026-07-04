@@ -1,0 +1,12 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Access Forbidden | SocietyConnect{% endblock %}
+
+{% block content %}
+<div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem;">
+    <h1 style="font-size: 5rem; font-weight: 800; background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">403</h1>
+    <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">Access Forbidden</h2>
+    <p style="color: var(--text-muted); max-width: 400px; margin-bottom: 2rem;">You do not have the required permissions to view this administration page.</p>
+    <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary">Back to Dashboard</a>
+</div>
+{% endblock %}

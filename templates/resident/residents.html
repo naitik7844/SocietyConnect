@@ -1,0 +1,72 @@
+{% extends 'layouts/dashboard_base.html' %}
+
+{% block title %}Resident Directory | SocietyConnect{% endblock %}
+
+{% block content %}
+<div class="table-container">
+    <div class="table-header-row" style="flex-wrap: wrap; gap: 1rem; align-items: center;">
+        <div>
+            <h1 class="table-title">Resident Directory</h1>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Manage resident profiles, emergency details, and registration status</p>
+        </div>
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <form action="{{ url_for('resident.list_residents') }}" method="GET" style="display: flex; gap: 0.5rem; margin: 0; align-items: center;">
+                <input type="text" name="q" value="{{ search_query or '' }}" placeholder="Search name, email, flat..." class="form-control" style="width: 220px; margin-bottom: 0; height: 38px;">
+                <button type="submit" class="btn btn-secondary" style="height: 38px; display: flex; align-items: center; justify-content: center; padding: 0 1rem;">Search</button>
+                {% if search_query %}
+                    <a href="{{ url_for('resident.list_residents') }}" class="btn btn-danger" style="height: 38px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; padding: 0 1rem; box-sizing: border-box; border-radius: 8px;">Clear</a>
+                {% endif %}
+            </form>
+            <a href="{{ url_for('resident.add_resident') }}" class="btn btn-primary" style="height: 38px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">Add Resident</a>
+        </div>
+    </div>
+
+    
+    <table class="custom-table">
+        <thead>
+            <tr>
+                <th>Resident</th>
+                <th>Flat Details</th>
+                <th>Resident Type</th>
+                <th>Status</th>
+                <th>Emergency Contact</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resident in residents %}
+                <tr>
+                    <td>
+                        <strong style="display: block;">{{ resident.user.username }}</strong>
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">{{ resident.user.email }} | {{ resident.user.phone }}</span>
+                    </td>
+                    <td>{% if resident.flat %}{{ resident.flat.building.name }} - {{ resident.flat.flat_number }}{% else %}<span class="badge badge-warning">Unassigned</span>{% endif %}</td>
+                    <td>{{ resident.resident_type }}</td>
+                    <td>
+                        {% if resident.user.status == 'Active' %}
+                            <span class="badge badge-success">Active</span>
+                        {% elif resident.user.status == 'Pending' %}
+                            <span class="badge badge-warning">Pending Approval</span>
+                        {% else %}
+                            <span class="badge badge-danger">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ resident.emergency_contact or 'N/A' }}</td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <a href="{{ url_for('resident.edit_resident', resident_id=resident.id) }}" class="btn btn-secondary btn-sm">Edit</a>
+                            <form action="{{ url_for('resident.delete_resident', resident_id=resident.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to remove this resident?');">
+                                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">No residents registered yet.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

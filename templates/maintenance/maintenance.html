@@ -1,0 +1,53 @@
+{% extends 'layouts/dashboard_base.html' %}
+
+{% block title %}Maintenance Ledger | SocietyConnect{% endblock %}
+
+{% block content %}
+<div class="table-container">
+    <div class="table-header-row">
+        <div>
+            <h1 class="table-title">Maintenance Ledger</h1>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Generate, monitor, and collect maintenance payments</p>
+        </div>
+        {% if current_user.is_admin %}
+            <a href="{{ url_for('maintenance.add_bill') }}" class="btn btn-primary">Generate Invoice</a>
+        {% endif %}
+    </div>
+    
+    <table class="custom-table">
+        <thead>
+            <tr>
+                <th>Invoice</th>
+                <th>Flat Destination</th>
+                <th>Due Date</th>
+                <th>Amount</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bill in bills %}
+                <tr>
+                    <td>
+                        <strong>{{ bill.title }}</strong>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Issued: {{ bill.bill_date.strftime('%Y-%m-%d') if bill.bill_date else '' }}</span>
+                    </td>
+                    <td>{{ bill.flat.building.name }} - {{ bill.flat.flat_number }}</td>
+                    <td>{{ bill.due_date.strftime('%Y-%m-%d') if bill.due_date else '' }}</td>
+                    <td style="font-weight: 600;">${{ bill.amount }}</td>
+                    <td>
+                        {% if bill.status == 'Unpaid' %}
+                            <span class="badge badge-danger">Unpaid</span>
+                        {% else %}
+                            <span class="badge badge-success">Paid</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">No maintenance bills logged.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

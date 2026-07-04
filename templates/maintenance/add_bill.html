@@ -1,0 +1,89 @@
+{% extends 'layouts/dashboard_base.html' %}
+
+{% block title %}Generate Bill | SocietyConnect{% endblock %}
+
+{% block content %}
+<div class="table-container" style="max-width: 500px; margin: 0 auto;">
+    <h2 class="table-title" style="margin-bottom: 1.5rem;">Generate Maintenance Bill</h2>
+    
+    <form action="{{ url_for('maintenance.add_bill') }}" method="POST">
+        <div class="form-group">
+            <label for="bill_type" class="form-label">Billing Type</label>
+            <select id="bill_type" name="bill_type" class="form-control form-select" required onchange="toggleBillingFields()">
+                <option value="Individual">Individual Flat</option>
+                <option value="Bulk">Bulk (Whole Tower)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="title" class="form-label">Invoice Title</label>
+            <input type="text" id="title" name="title" class="form-control" placeholder="e.g. Monthly Maintenance Jan 2026" required>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="amount" class="form-label">Amount ($)</label>
+                <input type="number" step="0.01" id="amount" name="amount" class="form-control" placeholder="0.00" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="due_date" class="form-label">Due Date</label>
+                <input type="date" id="due_date" name="due_date" class="form-control" required>
+            </div>
+        </div>
+
+        <!-- Individual flat selection -->
+        <div class="form-group" id="flat-selection-group">
+            <label for="flat_id" class="form-label">Destination Flat</label>
+            <select id="flat_id" name="flat_id" class="form-control form-select">
+                <option value="" disabled selected>Select Flat</option>
+                {% for flat in flats %}
+                    <option value="{{ flat.id }}">{{ flat.building.name }} - {{ flat.flat_number }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Bulk building selection -->
+        <div class="form-group" id="building-selection-group" style="display: none;">
+            <label for="building_id" class="form-label">Destination Building Tower</label>
+            <select id="building_id" name="building_id" class="form-control form-select">
+                <option value="" disabled selected>Select Tower</option>
+                {% for building in buildings %}
+                    <option value="{{ building.id }}">{{ building.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <a href="{{ url_for('maintenance.list_bills') }}" class="btn btn-secondary" style="flex: 1;">Cancel</a>
+            <button type="submit" class="btn btn-primary" style="flex: 1;">Generate Invoice</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleBillingFields() {
+    const billType = document.getElementById('bill_type').value;
+    const flatGroup = document.getElementById('flat-selection-group');
+    const buildingGroup = document.getElementById('building-selection-group');
+    const flatSelect = document.getElementById('flat_id');
+    const buildingSelect = document.getElementById('building_id');
+    
+    if (billType === 'Individual') {
+        flatGroup.style.display = 'block';
+        flatSelect.required = true;
+        buildingGroup.style.display = 'none';
+        buildingSelect.required = false;
+    } else {
+        flatGroup.style.display = 'none';
+        flatSelect.required = false;
+        buildingGroup.style.display = 'block';
+        buildingSelect.required = true;
+    }
+}
+// Run on load
+document.addEventListener('DOMContentLoaded', toggleBillingFields);
+</script>
+{% endblock %}

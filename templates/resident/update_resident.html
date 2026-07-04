@@ -1,0 +1,138 @@
+{% extends 'layouts/dashboard_base.html' %}
+
+{% block title %}Edit Resident | SocietyConnect{% endblock %}
+
+{% block content %}
+<div class="table-container" style="max-width: 600px; margin: 0 auto;">
+    <h2 class="table-title" style="margin-bottom: 1.5rem;">Edit Resident Details</h2>
+    
+    <form action="{{ url_for('resident.edit_resident', resident_id=resident.id) }}" method="POST">
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label">Username (Read-Only)</label>
+                <input type="text" class="form-control" value="{{ resident.user.username }}" disabled>
+            </div>
+            
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" value="{{ resident.user.email }}" required>
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="phone" class="form-label">Phone Number</label>
+                <div class="phone-input-container">
+                    <select name="country_code" class="form-control form-select phone-country-code" required>
+                        <option value="+91" {% if country_code == '+91' %}selected{% endif %}>+91 (IN)</option>
+                        <option value="+1" {% if country_code == '+1' %}selected{% endif %}>+1 (US)</option>
+                        <option value="+44" {% if country_code == '+44' %}selected{% endif %}>+44 (UK)</option>
+                        <option value="+971" {% if country_code == '+971' %}selected{% endif %}>+971 (AE)</option>
+                        <option value="+61" {% if country_code == '+61' %}selected{% endif %}>+61 (AU)</option>
+                        <option value="+65" {% if country_code == '+65' %}selected{% endif %}>+65 (SG)</option>
+                    </select>
+                    <input type="tel" id="phone" name="phone" class="form-control" value="{{ phone_number }}" pattern="[0-9]{10}" title="Please enter a valid 10-digit phone number" maxlength="10" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="status" class="form-label">Account Status</label>
+                <select id="status" name="status" class="form-control form-select" required>
+                    <option value="Active" {% if resident.user.status == 'Active' %}selected{% endif %}>Active</option>
+                    <option value="Pending" {% if resident.user.status == 'Pending' %}selected{% endif %}>Pending Approval</option>
+                    <option value="Inactive" {% if resident.user.status == 'Inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="building_id" class="form-label">Select Tower</label>
+                <select id="building_id" class="form-control form-select" onchange="filterFlatsByBuilding()">
+                    <option value="" {% if not resident.flat_id %}selected{% endif %}>Unassigned (Select Tower to assign flat)</option>
+                    {% for building in buildings %}
+                        <option value="{{ building.id }}" {% if resident.flat and resident.flat.building_id == building.id %}selected{% endif %}>{{ building.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="flat_id" class="form-label">Flat Number</label>
+                <select id="flat_id" name="flat_id" class="form-control form-select" data-selected-id="{{ resident.flat_id or '' }}">
+                    <option value="" {% if not resident.flat_id %}selected{% endif %}>Unassigned</option>
+                    {% for flat in flats %}
+                        <option value="{{ flat.id }}" data-building-id="{{ flat.building_id }}" {% if resident.flat_id == flat.id %}selected{% endif %}>{{ flat.flat_number }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="resident_type" class="form-label">Resident Type</label>
+                <select id="resident_type" name="resident_type" class="form-control form-select" required>
+                    <option value="Tenant" {% if resident.resident_type == 'Tenant' %}selected{% endif %}>Tenant</option>
+                    <option value="Owner" {% if resident.resident_type == 'Owner' %}selected{% endif %}>Owner</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="emergency_contact" class="form-label">Emergency Contact Name & Phone</label>
+            <input type="text" id="emergency_contact" name="emergency_contact" class="form-control" value="{{ resident.emergency_contact or '' }}">
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <a href="{{ url_for('resident.list_residents') }}" class="btn btn-secondary" style="flex: 1;">Cancel</a>
+            <button type="submit" class="btn btn-primary" style="flex: 1;">Save Changes</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let allFlats = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+    const flatSelect = document.getElementById('flat_id');
+    if (flatSelect) {
+        const options = flatSelect.querySelectorAll('option');
+        options.forEach(opt => {
+            if (opt.value !== "") {
+                allFlats.push({
+                    id: opt.value,
+                    number: opt.innerText,
+                    buildingId: opt.getAttribute('data-building-id')
+                });
+            }
+        });
+        filterFlatsByBuilding(true);
+    }
+});
+
+function filterFlatsByBuilding(isInitial = false) {
+    const buildingSelect = document.getElementById('building_id');
+    const flatSelect = document.getElementById('flat_id');
+    if (!buildingSelect || !flatSelect) return;
+    
+    const selectedBuildingId = buildingSelect.value;
+    const currentSelectedValue = flatSelect.getAttribute('data-selected-id') || "";
+    
+    // Clear and rebuild options
+    flatSelect.innerHTML = '<option value="">Unassigned</option>';
+    
+    if (!selectedBuildingId) return; // Keep unassigned only
+    
+    allFlats.forEach(flat => {
+        if (flat.buildingId === selectedBuildingId) {
+            const opt = document.createElement('option');
+            opt.value = flat.id;
+            opt.innerText = flat.number;
+            if (flat.id === currentSelectedValue) {
+                opt.selected = true;
+            }
+            flatSelect.appendChild(opt);
+        }
+    });
+}
+</script>
+{% endblock %}

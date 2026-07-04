@@ -1,0 +1,31 @@
+{% extends 'layouts/dashboard_base.html' %}
+
+{% block title %}Publish Announcement | SocietyConnect{% endblock %}
+
+{% block content %}
+<div class="table-container" style="max-width: 600px; margin: 0 auto;">
+    <h2 class="table-title" style="margin-bottom: 1.5rem;">Publish Announcement Notice</h2>
+    
+    <form action="{{ url_for('notice.add_notice') }}" method="POST">
+        <div class="form-group">
+            <label for="title" class="form-label">Notice Title</label>
+            <input type="text" id="title" name="title" class="form-control" placeholder="e.g. Annual General Meeting (AGM) Scheduling" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="expiry_date" class="form-label">Expiry Date (Optional)</label>
+            <input type="date" id="expiry_date" name="expiry_date" class="form-control">
+        </div>
+        
+        <div class="form-group">
+            <label for="content" class="form-label">Announcement Content</label>
+            <textarea id="content" name="content" class="form-control" rows="8" placeholder="Type the announcement details here..." required></textarea>
+        </div>
+        
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <a href="{{ url_for('notice.list_notices') }}" class="btn btn-secondary" style="flex: 1;">Cancel</a>
+            <button type="submit" class="btn btn-primary" style="flex: 1;">Publish Notice</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends 'layouts/dashboard_base.html' %}
+
+{% block title %}Security Desk | SocietyConnect{% endblock %}
+
+{% block content %}
+<div class="table-header-row">
+    <div>
+        <h1 class="table-title" style="font-size: 2rem;">Security Checkpoint</h1>
+        <p style="color: var(--text-muted);">Manage visitor entries, logs, and vehicle verification</p>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-top: 2rem;">
+    <!-- Log Visitor Check-In Form -->
+    <div class="table-container">
+        <h3 class="table-title" style="margin-bottom: 1.5rem;">New Visitor Check-In</h3>
+        <form action="{{ url_for('visitor.add_visitor') }}" method="POST">
+            <div class="form-group">
+                <label for="name" class="form-label">Visitor Name</label>
+                <input type="text" id="name" name="name" class="form-control" placeholder="Full name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone" class="form-label">Phone Number</label>
+                <div class="phone-input-container">
+                    <select name="country_code" class="form-control form-select phone-country-code" required>
+                        <option value="+91" selected>+91 (IN)</option>
+                        <option value="+1">+1 (US)</option>
+                        <option value="+44">+44 (UK)</option>
+                        <option value="+971">+971 (AE)</option>
+                        <option value="+61">+61 (AU)</option>
+                        <option value="+65">+65 (SG)</option>
+                    </select>
+                    <input type="tel" id="phone" name="phone" class="form-control" placeholder="10-digit mobile" pattern="[0-9]{10}" title="Please enter a valid 10-digit phone number" maxlength="10" required>
+                </div>
+            </div>
+            
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="building_id" class="form-label">Select Tower</label>
+                    <select id="building_id" class="form-control form-select" required onchange="filterFlatsByBuilding()">
+                        <option value="" disabled selected>Select Tower</option>
+                        {% for building in buildings %}
+                            <option value="{{ building.id }}">{{ building.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="flat_id" class="form-label">Flat Number</label>
+                    <select id="flat_id" name="flat_id" class="form-control form-select" required>
+                        <option value="" disabled selected>Choose Flat</option>
+                        {% for flat in flats %}
+                            <option value="{{ flat.id }}" data-building-id="{{ flat.building_id }}">{{ flat.flat_number }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="purpose" class="form-label">Purpose of Visit</label>
+                <input type="text" id="purpose" name="purpose" class="form-control" placeholder="e.g. Delivery, Guest" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="vehicle_number" class="form-label">Vehicle Number (Optional)</label>
+                <input type="text" id="vehicle_number" name="vehicle_number" class="form-control" placeholder="e.g. MH-12-AB-1234">
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Log Check-In</button>
+        </form>
+    </div>
+
+    <!-- Active Checked-In Visitors -->
+    <div class="table-container">
+        <h3 class="table-title">Currently In Society</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">Total active visitors: {{ stats.active_visitors }}</p>
+        
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Visitor</th>
+                    <th>Destination</th>
+                    <th>In Time</th>
+                    <th>Vehicle</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for visitor in active_visitors %}
+                    <tr>
+                        <td>
+                            <strong style="display: block;">{{ visitor.name }}</strong>
+                            <span style="font-size: 0.75rem; color: var(--text-muted);">{{ visitor.phone }}</span>
+                        </td>
+                        <td>{{ visitor.flat.building.name }} - {{ visitor.flat.flat_number }}</td>
+                        <td style="font-size: 0.85rem;">{{ visitor.check_in_time.strftime('%H:%M') }}</td>
+                        <td>{{ visitor.vehicle_number or 'N/A' }}</td>
+                        <td>
+                            <form action="{{ url_for('visitor.checkout_visitor', visitor_id=visitor.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">Check-Out</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">No active visitors inside society limits.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let allFlats = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+    const flatSelect = document.getElementById('flat_id');
+    if (flatSelect) {
+        const options = flatSelect.querySelectorAll('option');
+        options.forEach(opt => {
+            if (opt.value !== "") {
+                allFlats.push({
+                    id: opt.value,
+                    number: opt.innerText,
+                    buildingId: opt.getAttribute('data-building-id')
+                });
+            }
+        });
+        filterFlatsByBuilding();
+    }
+});
+
+function filterFlatsByBuilding() {
+    const buildingSelect = document.getElementById('building_id');
+    const flatSelect = document.getElementById('flat_id');
+    if (!buildingSelect || !flatSelect) return;
+    
+    const selectedBuildingId = buildingSelect.value;
+    
+    // Clear and rebuild options
+    flatSelect.innerHTML = '<option value="" selected disabled>Select Flat</option>';
+    
+    allFlats.forEach(flat => {
+        if (flat.buildingId === selectedBuildingId) {
+            const opt = document.createElement('option');
+            opt.value = flat.id;
+            opt.innerText = flat.number;
+            flatSelect.appendChild(opt);
+        }
+    });
+}
+</script>
+{% endblock %}

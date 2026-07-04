@@ -1,0 +1,189 @@
+{% extends 'layouts/dashboard_base.html' %}
+
+{% block title %}Resident Desk | SocietyConnect{% endblock %}
+
+{% block content %}
+<div class="table-header-row">
+    <div>
+        <h1 class="table-title" style="font-size: 2rem;">Welcome to Flat {{ stats.flat_number }}</h1>
+        <p style="color: var(--text-muted);">{{ stats.building_name }} • Occupancy: {{ stats.occupancy_status }}</p>
+    </div>
+</div>
+
+<div class="card-grid">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-desc">Unpaid Bills</span>
+            <div class="card-icon" style="color: var(--danger); background: rgba(239, 68, 68, 0.1);">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </div>
+        </div>
+        <div class="card-value">{{ stats.unpaid_bills_count }}</div>
+        <span class="card-desc">Maintenance invoices due</span>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <span class="card-desc">Pending Complaints</span>
+            <div class="card-icon" style="color: var(--warning); background: rgba(245, 158, 11, 0.1);">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            </div>
+        </div>
+        <div class="card-value">{{ stats.pending_complaints_count }}</div>
+        <span class="card-desc">Active tickets tracked</span>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 2rem;">
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <!-- Maintenance Invoices -->
+        <div class="table-container">
+            <h3 class="table-title" style="margin-bottom: 1.5rem;">Maintenance Invoices</h3>
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Bill Details</th>
+                        <th>Amount</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bill in bills %}
+                        <tr>
+                            <td>
+                                <strong>{{ bill.title }}</strong>
+                                <span style="display: block; font-size: 0.75rem; color: var(--text-muted);">Billed on: {{ bill.bill_date.strftime('%Y-%m-%d') if bill.bill_date else '' }}</span>
+                            </td>
+                            <td style="font-weight: 600;">${{ bill.amount }}</td>
+                            <td>{{ bill.due_date.strftime('%Y-%m-%d') if bill.due_date else '' }}</td>
+                            <td>
+                                {% if bill.status == 'Unpaid' %}
+                                    <span class="badge badge-danger">Unpaid</span>
+                                {% else %}
+                                    <span class="badge badge-success">Paid</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if bill.status == 'Unpaid' %}
+                                    <button class="btn btn-primary btn-sm" onclick="openPaymentModal({{ bill.id }}, '{{ bill.title }}', {{ bill.amount }})">Pay Now</button>
+                                {% else %}
+                                    <span style="color: var(--text-muted); font-size: 0.85rem;">Completed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-muted);">No invoices logged.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Complaints History -->
+        <div class="table-container">
+            <div class="table-header-row">
+                <h3 class="table-title">My Filed Complaints</h3>
+                <a href="{{ url_for('complaint.add_complaint') }}" class="btn btn-primary btn-sm">File Complaint</a>
+            </div>
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Filed On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for complaint in complaints %}
+                        <tr>
+                            <td>
+                                <strong>{{ complaint.title }}</strong>
+                                <span style="display: block; font-size: 0.85rem; color: var(--text-muted);">{{ complaint.description[:60] }}</span>
+                            </td>
+                            <td>{{ complaint.category }}</td>
+                            <td>
+                                {% if complaint.status == 'Pending' %}
+                                    <span class="badge badge-danger">Pending</span>
+                                {% elif complaint.status == 'In Progress' %}
+                                    <span class="badge badge-warning">In Progress</span>
+                                {% else %}
+                                    <span class="badge badge-success">Resolved</span>
+                                {% endif %}
+                            </td>
+                            <td style="font-size: 0.85rem;">{{ complaint.created_at.strftime('%Y-%m-%d') }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--text-muted);">No complaints raised yet.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Announcement Board -->
+    <div class="table-container">
+        <h3 class="table-title" style="margin-bottom: 1.5rem;">Notice Board</h3>
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            {% for notice in notices %}
+                <div style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <h4 style="margin-bottom: 0.25rem;">{{ notice.title }}</h4>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                        {{ notice.content }}
+                    </p>
+                    <span style="font-size: 0.75rem; color: var(--primary-color); display: block; margin-top: 0.5rem;">
+                        Posted: {{ notice.created_at.strftime('%Y-%m-%d') }}
+                    </span>
+                </div>
+            {% else %}
+                <p style="color: var(--text-muted); text-align: center; font-size: 0.9rem;">No active notices.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Translucent Payment Modal -->
+<div class="modal" id="payment-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Complete Payment</h3>
+            <button class="modal-close" onclick="closeModal('payment-modal')">&times;</button>
+        </div>
+        <form id="payment-form" action="" method="POST">
+            <p style="margin-bottom: 1rem; font-size: 0.95rem;">
+                You are paying maintenance dues for <strong id="modal-bill-title">Bill</strong> of <strong id="modal-bill-amount">$0.00</strong>.
+            </p>
+            
+            <div class="form-group">
+                <label for="payment_method" class="form-label">Select Payment Mode</label>
+                <select id="payment_method" name="payment_method" class="form-control form-select">
+                    <option value="Card">Credit / Debit Card</option>
+                    <option value="UPI">UPI (GooglePay/PhonePe)</option>
+                    <option value="NetBanking">NetBanking</option>
+                </select>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('payment-modal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Authorize Payment</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openPaymentModal(billId, billTitle, billAmount) {
+    document.getElementById('modal-bill-title').innerText = billTitle;
+    document.getElementById('modal-bill-amount').innerText = '$' + billAmount;
+    document.getElementById('payment-form').action = '/maintenance/pay/' + billId;
+    openModal('payment-modal');
+}
+</script>
+{% endblock %}

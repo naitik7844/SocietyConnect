@@ -1,0 +1,124 @@
+{% extends 'layouts/dashboard_base.html' %}
+
+{% block title %}Admin Dashboard | SocietyConnect{% endblock %}
+
+{% block content %}
+<div class="table-header-row">
+    <div>
+        <h1 class="table-title" style="font-size: 2rem;">Society Overview</h1>
+        <p style="color: var(--text-muted);">Real-time statistics & administration panels</p>
+    </div>
+</div>
+
+<!-- KPI Stats Grid -->
+<div class="card-grid">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-desc">Total Residents</span>
+            <div class="card-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+            </div>
+        </div>
+        <div class="card-value">{{ stats.total_residents }}</div>
+        <span class="card-desc">Registered occupants</span>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <span class="card-desc">Active Visitors</span>
+            <div class="card-icon" style="color: var(--warning); background: rgba(245, 158, 11, 0.1);">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path></svg>
+            </div>
+        </div>
+        <div class="card-value">{{ stats.active_visitors }}</div>
+        <span class="card-desc">Currently checked-in</span>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <span class="card-desc">Pending Complaints</span>
+            <div class="card-icon" style="color: var(--danger); background: rgba(239, 68, 68, 0.1);">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            </div>
+        </div>
+        <div class="card-value">{{ stats.pending_complaints }}</div>
+        <span class="card-desc">Requires assignment</span>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <span class="card-desc">Registered Vehicles</span>
+            <div class="card-icon" style="color: var(--success); background: rgba(16, 185, 129, 0.1);">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+            </div>
+        </div>
+        <div class="card-value">{{ stats.total_vehicles }}</div>
+        <span class="card-desc">2 & 4 Wheelers</span>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-top: 2rem;">
+    <!-- Recent Complaints Table -->
+    <div class="table-container">
+        <div class="table-header-row">
+            <h3 class="table-title">Recent Complaints</h3>
+            <a href="{{ url_for('complaint.list_complaints') }}" class="btn btn-secondary btn-sm">Manage All</a>
+        </div>
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Flat</th>
+                    <th>Status</th>
+                    <th>Category</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for complaint in recent_complaints %}
+                    <tr>
+                        <td>{{ complaint.title }}</td>
+                        <td>{{ complaint.flat.building.name }} - {{ complaint.flat.flat_number }}</td>
+                        <td>
+                            {% if complaint.status == 'Pending' %}
+                                <span class="badge badge-danger">Pending</span>
+                            {% elif complaint.status == 'In Progress' %}
+                                <span class="badge badge-warning">In Progress</span>
+                            {% else %}
+                                <span class="badge badge-success">Resolved</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ complaint.category }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: var(--text-muted);">No complaints filed yet.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Active Notices Board -->
+    <div class="table-container">
+        <div class="table-header-row">
+            <h3 class="table-title">Recent Notices</h3>
+            <a href="{{ url_for('notice.list_notices') }}" class="btn btn-secondary btn-sm">Add Notice</a>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+            {% for notice in recent_notices %}
+                <div style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px; border: 1px solid var(--border-color);">
+                    <h4 style="margin-bottom: 0.25rem;">{{ notice.title }}</h4>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
+                        {{ notice.content[:100] }}{% if notice.content|length > 100 %}...{% endif %}
+                    </p>
+                    <span style="font-size: 0.75rem; color: var(--primary-color); display: block; margin-top: 0.5rem;">
+                        Posted on: {{ notice.created_at.strftime('%Y-%m-%d') }}
+                    </span>
+                </div>
+            {% else %}
+                <p style="color: var(--text-muted); text-align: center; font-size: 0.9rem;">No active announcements.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

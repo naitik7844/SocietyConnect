@@ -1,0 +1,116 @@
+{% extends 'layouts/dashboard_base.html' %}
+
+{% block title %}Complaints Registry | SocietyConnect{% endblock %}
+
+{% block content %}
+<div class="table-container">
+    <div class="table-header-row">
+        <div>
+            <h1 class="table-title">Complaints Registry</h1>
+            <p style="color: var(--text-muted); font-size: 0.875rem;">Raise and monitor maintenance tickets, utilities, and general feedback</p>
+        </div>
+        {% if current_user.is_resident %}
+            <a href="{{ url_for('complaint.add_complaint') }}" class="btn btn-primary">File New Ticket</a>
+        {% endif %}
+    </div>
+    
+    <table class="custom-table">
+        <thead>
+            <tr>
+                <th>Ticket Details</th>
+                <th>Category</th>
+                <th>Source Flat</th>
+                <th>Assigned Staff</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for complaint in complaints %}
+                <tr>
+                    <td>
+                        <strong style="display: block;">{{ complaint.title }}</strong>
+                        <span style="font-size: 0.85rem; color: var(--text-muted); display: block; max-width: 400px;">{{ complaint.description }}</span>
+                        {% if complaint.resolution_notes %}
+                            <div style="margin-top: 0.5rem; padding: 0.5rem; background: rgba(16, 185, 129, 0.1); border-left: 2px solid var(--success); font-size: 0.8rem; border-radius: 4px;">
+                                <strong>Resolution:</strong> {{ complaint.resolution_notes }}
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td>{{ complaint.category }}</td>
+                    <td>{{ complaint.flat.building.name }} - {{ complaint.flat.flat_number }}</td>
+                    <td>
+                        {% if current_user.is_admin and complaint.status == 'Pending' %}
+                            <form action="{{ url_for('complaint.assign_complaint', complaint_id=complaint.id) }}" method="POST" style="display: flex; gap: 0.25rem;">
+                                <select name="staff_id" class="form-control form-select btn-sm" style="padding: 0.25rem; font-size: 0.85rem;" required>
+                                    <option value="" disabled selected>Assign Staff</option>
+                                    {% for staff in staff_members %}
+                                        <option value="{{ staff.id }}">{{ staff.user.username }} ({{ staff.staff_type }})</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-primary btn-sm">Assign</button>
+                            </form>
+                        {% else %}
+                            <span>{{ complaint.assigned_staff.user.username if complaint.assigned_staff else 'Unassigned' }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if complaint.status == 'Pending' %}
+                            <span class="badge badge-danger">Pending</span>
+                        {% elif complaint.status == 'In Progress' %}
+                            <span class="badge badge-warning">In Progress</span>
+                        {% else %}
+                            <span class="badge badge-success">Resolved</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if complaint.status != 'Resolved' %}
+                            {% if current_user.is_admin or (current_user.staff and complaint.assigned_to_staff_id == current_user.staff.id) %}
+                                <button class="btn btn-success btn-sm" onclick="openResolveModal({{ complaint.id }})">Resolve</button>
+                            {% else %}
+                                <span style="font-size: 0.85rem; color: var(--text-muted);">Awaiting action</span>
+                            {% endif %}
+                        {% else %}
+                            <span style="font-size: 0.85rem; color: var(--text-muted);">Completed</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">No complaint tickets reported.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Resolve Complaint Modal -->
+<div class="modal" id="resolve-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Resolve Ticket</h3>
+            <button class="modal-close" onclick="closeModal('resolve-modal')">&times;</button>
+        </div>
+        <form id="resolve-form" action="" method="POST">
+            <div class="form-group">
+                <label for="resolution_notes" class="form-label">Resolution Notes</label>
+                <textarea id="resolution_notes" name="resolution_notes" class="form-control" rows="4" placeholder="Describe how this issue was fixed..." required></textarea>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('resolve-modal')">Cancel</button>
+                <button type="submit" class="btn btn-success">Mark Resolved</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openResolveModal(complaintId) {
+    document.getElementById('resolve-form').action = '/complaint/resolve/' + complaintId;
+    openModal('resolve-modal');
+}
+</script>
+{% endblock %}

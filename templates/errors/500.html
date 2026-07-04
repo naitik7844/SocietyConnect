@@ -1,0 +1,12 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Server Error | SocietyConnect{% endblock %}
+
+{% block content %}
+<div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem;">
+    <h1 style="font-size: 5rem; font-weight: 800; background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">500</h1>
+    <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">Internal Server Error</h2>
+    <p style="color: var(--text-muted); max-width: 400px; margin-bottom: 2rem;">Something went wrong on our end. Please try again later or contact the developer.</p>
+    <a href="{{ url_for('home.index') }}" class="btn btn-primary">Go Home</a>
+</div>
+{% endblock %}

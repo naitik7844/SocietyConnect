@@ -1,0 +1,24 @@
+<div class="navbar">
+    <div class="navbar-left">
+        <button class="navbar-toggle" id="sidebar-toggle">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+        </button>
+        <span class="user-role" style="font-weight: 600; font-size: 1rem; color: var(--text-primary);">
+            SocietyConnect Portal
+        </span>
+    </div>
+    
+    <div class="navbar-right">
+        <div class="user-profile">
+            <div class="user-avatar">
+                {{ current_user.username[0].upper() if current_user.username else 'U' }}
+            </div>
+            <div class="user-info">
+                <span class="user-name">{{ current_user.username }}</span>
+                <span class="user-role">{{ current_user.role.name }}</span>
+            </div>
+        </div>
+    </div>
+</div>
