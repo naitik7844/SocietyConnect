@@ -21,6 +21,19 @@ class Config:
     SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{quote_plus(DB_USER)}:{quote_plus(DB_PASSWORD)}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    # Complaint workflow configuration
+    COMPLAINT_OVERDUE_HOURS = int(os.environ.get('COMPLAINT_OVERDUE_HOURS', 24))
+
     # Uploads configuration
     UPLOAD_FOLDER = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static', 'uploads')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB limit
+
+
+class TestConfig(Config):
+    TESTING = True
+    DEBUG = False
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SECRET_KEY = 'test_secret_key_society_connect'
+    WTF_CSRF_ENABLED = False
+    COMPLAINT_OVERDUE_HOURS = 24

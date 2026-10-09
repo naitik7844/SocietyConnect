@@ -7,6 +7,7 @@ from models.resident import Resident
 from models.visitor import Visitor
 from models.staff import Staff
 from models.complaint import Complaint
+from models.complaint_history import ComplaintHistory
 from models.maintenance import Maintenance
 from models.payment import Payment
 from models.notice import Notice
@@ -23,6 +24,7 @@ __all__ = [
     'Visitor',
     'Staff',
     'Complaint',
+    'ComplaintHistory',
     'Maintenance',
     'Payment',
     'Notice',

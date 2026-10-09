@@ -6,7 +6,7 @@
 <div class="table-header-row">
     <div>
         <h1 class="table-title" style="font-size: 2rem;">Security Checkpoint</h1>
-        <p style="color: var(--text-muted);">Manage visitor entries, logs, and vehicle verification</p>
+        <p style="color: var(--text-secondary);">Manage visitor entries, logs, and vehicle verification</p>
     </div>
 </div>
 
@@ -74,7 +74,7 @@
     <!-- Active Checked-In Visitors -->
     <div class="table-container">
         <h3 class="table-title">Currently In Society</h3>
-        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1.5rem;">Total active visitors: {{ stats.active_visitors }}</p>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.5rem;">Total active visitors: {{ stats.active_visitors }}</p>
         
         <table class="custom-table">
             <thead>
@@ -90,7 +90,7 @@
                 {% for visitor in active_visitors %}
                     <tr>
                         <td>
-                            <strong style="display: block;">{{ visitor.name }}</strong>
+                            <strong style="display: block; color: var(--text-primary);">{{ visitor.name }}</strong>
                             <span style="font-size: 0.75rem; color: var(--text-muted);">{{ visitor.phone }}</span>
                         </td>
                         <td>{{ visitor.flat.building.name }} - {{ visitor.flat.flat_number }}</td>

@@ -99,22 +99,46 @@ def init_db():
             
             # Create default Admin and Security users if they don't exist
             cursor.execute("SELECT id FROM users WHERE username = 'admin';")
-            if not cursor.fetchone():
+            admin_row = cursor.fetchone()
+            if not admin_row:
                 admin_pass = generate_password_hash('admin123')
                 cursor.execute(
                     "INSERT INTO users (username, email, password_hash, phone, role_id, status) VALUES (%s, %s, %s, %s, %s, %s);",
                     ('admin', 'admin@societyconnect.com', admin_pass, '1234567890', 1, 'Active')
                 )
+                admin_id = cursor.lastrowid
                 print("Default Admin user created (username: admin, password: admin123).")
+            else:
+                admin_id = admin_row[0]
+
+            cursor.execute("SELECT id FROM staff WHERE user_id = %s;", (admin_id,))
+            if not cursor.fetchone():
+                cursor.execute(
+                    "INSERT INTO staff (user_id, staff_type, designation, salary, joining_date) VALUES (%s, %s, %s, %s, CURDATE());",
+                    (admin_id, 'Admin', 'Society Administrator', 50000.00)
+                )
+                print("Staff record for Admin created.")
                 
             cursor.execute("SELECT id FROM users WHERE username = 'security';")
-            if not cursor.fetchone():
+            sec_row = cursor.fetchone()
+            if not sec_row:
                 security_pass = generate_password_hash('security123')
                 cursor.execute(
                     "INSERT INTO users (username, email, password_hash, phone, role_id, status) VALUES (%s, %s, %s, %s, %s, %s);",
                     ('security', 'security@societyconnect.com', security_pass, '0987654321', 4, 'Active')
                 )
+                sec_id = cursor.lastrowid
                 print("Default Security user created (username: security, password: security123).")
+            else:
+                sec_id = sec_row[0]
+
+            cursor.execute("SELECT id FROM staff WHERE user_id = %s;", (sec_id,))
+            if not cursor.fetchone():
+                cursor.execute(
+                    "INSERT INTO staff (user_id, staff_type, designation, salary, joining_date) VALUES (%s, %s, %s, %s, CURDATE());",
+                    (sec_id, 'Security', 'Security Supervisor', 28000.00)
+                )
+                print("Staff record for Security created.")
 
             cursor.execute("SELECT id FROM users WHERE username = 'resident';")
             if not cursor.fetchone():

@@ -4,9 +4,9 @@
 
 {% block content %}
 <div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem;">
-    <h1 style="font-size: 5rem; font-weight: 800; background: var(--gradient-accent); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">401</h1>
-    <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">Session Expired or Unauthorized</h2>
-    <p style="color: var(--text-muted); max-width: 400px; margin-bottom: 2rem;">You need to log in to access this resource or your session has expired.</p>
+    <h1 style="font-size: 5rem; font-weight: 800; color: var(--primary-color);">401</h1>
+    <h2 style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--text-primary);">Session Expired or Unauthorized</h2>
+    <p style="color: var(--text-secondary); max-width: 400px; margin-bottom: 2rem;">You need to log in to access this resource or your session has expired.</p>
     <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Go to Login</a>
 </div>
 {% endblock %}

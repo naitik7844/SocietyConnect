@@ -1,0 +1,453 @@
+{% extends 'layouts/dashboard_base.html' %}
+
+{% block title %}Ticket #{{ complaint.id }} - {{ complaint.title }} | SocietyConnect{% endblock %}
+
+{% block content %}
+<div style="max-width: 960px; margin: 0 auto; display: flex; flex-direction: column; gap: 1.5rem;">
+
+    <!-- Top Breadcrumb & Action Bar -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <a href="{{ url_for('complaint.list_complaints') }}" style="color: var(--primary-color); text-decoration: none; font-size: 0.875rem; font-weight: 500; display: inline-flex; align-items: center; gap: 0.35rem; margin-bottom: 0.35rem;">
+                &larr; Back to Complaints Registry
+            </a>
+            <h1 class="table-title" style="margin: 0; font-size: 1.5rem;">
+                Ticket #{{ complaint.id }}: {{ complaint.title }}
+            </h1>
+        </div>
+
+        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+            {% if complaint.status == 'Pending' %}
+                <span class="badge badge-danger" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Pending Assignment</span>
+            {% elif complaint.status == 'Assigned' %}
+                <span class="badge badge-info" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; background: #E0F2FE; color: #0369A1; border: 1px solid #BAE6FD;">Assigned</span>
+            {% elif complaint.status == 'In Progress' %}
+                <span class="badge badge-warning" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">In Progress</span>
+            {% elif complaint.status == 'Reopened' %}
+                <span class="badge" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; background: #FEF3C7; color: #B45309; border: 1px solid #FCD34D;">Reopened</span>
+            {% else %}
+                <span class="badge badge-success" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Resolved</span>
+            {% endif %}
+
+            {% if complaint.is_overdue and complaint.status != 'Resolved' %}
+                <span class="badge" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; background: #FEE2E2; color: #B91C1C; border: 1px solid #FCA5A5;">
+                    ⚠️ Overdue ({{ complaint.elapsed_time_formatted }})
+                </span>
+            {% endif %}
+
+            <!-- Admin Actions -->
+            {% if current_user.is_admin %}
+                {% if complaint.status in ['Assigned', 'Reopened'] %}
+                    <form action="{{ url_for('complaint.start_complaint', complaint_id=complaint.id) }}" method="POST" style="display: inline;">
+                        <input type="hidden" name="next" value="{{ url_for('complaint.view_complaint', complaint_id=complaint.id) }}">
+                        <button type="submit" class="btn btn-primary" style="height: 36px; padding: 0 1rem; font-size: 0.875rem; background: #2563EB;">
+                            Start Work
+                        </button>
+                    </form>
+                    {% if complaint.assigned_to_staff_id %}
+                        <button class="btn btn-primary" onclick="openResolveModal()" style="height: 36px; padding: 0 1rem; font-size: 0.875rem;">
+                            Mark Resolved
+                        </button>
+                    {% endif %}
+                {% elif complaint.status == 'In Progress' %}
+                    <button class="btn btn-primary" onclick="openResolveModal()" style="height: 36px; padding: 0 1rem; font-size: 0.875rem;">
+                        Mark Resolved
+                    </button>
+                {% elif complaint.status == 'Resolved' %}
+                    <button class="btn btn-secondary" onclick="openReopenModal()" style="height: 36px; padding: 0 1rem; font-size: 0.875rem;">
+                        Reopen Ticket
+                    </button>
+                {% endif %}
+            {% else %}
+                <!-- Resident Actions -->
+                {% if complaint.status in ['Assigned', 'In Progress', 'Reopened'] and complaint.assigned_to_staff_id %}
+                    <button type="button" class="btn btn-primary" onclick="openResidentResolveModal()" style="height: 36px; padding: 0 1rem; font-size: 0.875rem; background: #059669; border-color: #059669;" id="btn-resident-resolve-header">
+                        ✓ Mark as Resolved
+                    </button>
+                {% elif complaint.status == 'Resolved' %}
+                    <button class="btn btn-secondary" onclick="openReopenModal()" style="height: 36px; padding: 0 1rem; font-size: 0.875rem; color: #B45309; border-color: #FCD34D; background: #FFFBEB;">
+                        Report Issue Unresolved
+                    </button>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Status Progression Workflow Stepper (Phase 1 & 5) -->
+    <div class="table-container" style="padding: 1.25rem 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; position: relative;">
+            <div style="position: absolute; top: 16px; left: 10%; right: 10%; height: 3px; background: var(--border-color); z-index: 1;"></div>
+            
+            <!-- Step 1: Pending -->
+            <div style="text-align: center; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 0.35rem;">
+                <div style="width: 34px; height: 34px; border-radius: 50%; background: var(--primary-color); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem;">
+                    ✓
+                </div>
+                <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-primary);">Pending</span>
+                <span style="font-size: 0.7rem; color: var(--text-muted);">Ticket Logged</span>
+            </div>
+
+            <!-- Step 2: Assigned -->
+            {% set is_assigned_reached = (complaint.status in ['Assigned', 'In Progress', 'Resolved'] or complaint.assigned_staff) %}
+            <div style="text-align: center; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 0.35rem;">
+                <div style="width: 34px; height: 34px; border-radius: 50%; background: {% if is_assigned_reached %}var(--primary-color){% else %}var(--border-color){% endif %}; color: {% if is_assigned_reached %}#fff{% else %}var(--text-muted){% endif %}; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem;">
+                    {% if is_assigned_reached %}✓{% else %}2{% endif %}
+                </div>
+                <span style="font-size: 0.8rem; font-weight: 600; color: {% if is_assigned_reached %}var(--text-primary){% else %}var(--text-muted){% endif %};">Assigned</span>
+                <span style="font-size: 0.7rem; color: var(--text-muted);">Staff Allocated</span>
+            </div>
+
+            <!-- Step 3: In Progress -->
+            {% set is_inprogress_reached = (complaint.status in ['In Progress', 'Resolved']) %}
+            <div style="text-align: center; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 0.35rem;">
+                <div style="width: 34px; height: 34px; border-radius: 50%; background: {% if is_inprogress_reached %}var(--primary-color){% else %}var(--border-color){% endif %}; color: {% if is_inprogress_reached %}#fff{% else %}var(--text-muted){% endif %}; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem;">
+                    {% if is_inprogress_reached %}✓{% else %}3{% endif %}
+                </div>
+                <span style="font-size: 0.8rem; font-weight: 600; color: {% if is_inprogress_reached %}var(--text-primary){% else %}var(--text-muted){% endif %};">In Progress</span>
+                <span style="font-size: 0.7rem; color: var(--text-muted);">Work Underway</span>
+            </div>
+
+            <!-- Step 4: Resolved -->
+            {% set is_resolved = (complaint.status == 'Resolved') %}
+            <div style="text-align: center; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 0.35rem;">
+                <div style="width: 34px; height: 34px; border-radius: 50%; background: {% if is_resolved %}#10B981{% else %}var(--border-color){% endif %}; color: {% if is_resolved %}#fff{% else %}var(--text-muted){% endif %}; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.85rem;">
+                    {% if is_resolved %}✓{% else %}4{% endif %}
+                </div>
+                <span style="font-size: 0.8rem; font-weight: 600; color: {% if is_resolved %}#10B981{% else %}var(--text-muted){% endif %};">Resolved</span>
+                <span style="font-size: 0.7rem; color: var(--text-muted);">Completed</span>
+            </div>
+        </div>
+    </div>
+
+    {% if complaint.status == 'Reopened' %}
+        <div style="background: #FFFBEB; border: 1px solid #FDE68A; border-left: 4px solid #D97706; padding: 0.875rem 1.25rem; border-radius: 6px; color: #92400E; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1.25rem;">⚠️</span>
+                <div>
+                    <strong>Complaint Ticket Reopened</strong>
+                    <div style="font-size: 0.8rem; color: #78350F;">This complaint was previously resolved and has been reopened for follow-up maintenance.</div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Main Grid: Ticket Details & Assigned Staff Contact Card -->
+    <div style="display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; align-items: start;">
+
+        <!-- Left Column: Complaint Information & History -->
+        <div class="table-container" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <div>
+                <h3 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 0.5rem;">Ticket Details</h3>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+                    <span class="badge badge-secondary" style="font-size: 0.8rem;">Category: {{ complaint.category }}</span>
+                    <span class="badge badge-secondary" style="font-size: 0.8rem;">Flat: {{ complaint.flat.building.name }} - {{ complaint.flat.flat_number }}</span>
+                    <span class="badge badge-secondary" style="font-size: 0.8rem;">Filed: {{ complaint.created_at.strftime('%d %b %Y, %I:%M %p') }}</span>
+                </div>
+                <div style="background: var(--very-light-sage); padding: 1rem; border-radius: 6px; border: 1px solid var(--light-sage); color: var(--text-primary); font-size: 0.925rem; line-height: 1.5;">
+                    {{ complaint.description }}
+                </div>
+            </div>
+
+            <!-- Verified Resolution Card (Requirements 3 & 5) -->
+            {% if complaint.status == 'Resolved' or complaint.resolution_notes %}
+                <div style="padding: 1.25rem; background: #ECFDF5; border-left: 4px solid #10B981; border-radius: 6px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                        <h4 style="color: #065F46; font-size: 1rem; margin: 0; display: flex; align-items: center; gap: 0.35rem;">
+                            <span>✅</span> Work Performed & Resolution Details
+                        </h4>
+                        {% if complaint.status == 'Resolved' %}
+                            <span class="badge badge-success" style="font-size: 0.75rem;">Verified</span>
+                        {% endif %}
+                    </div>
+                    <p style="margin: 0; color: #1F2937; font-size: 0.9rem; line-height: 1.5; white-space: pre-wrap;">{{ complaint.resolution_notes }}</p>
+                    
+                    <div style="margin-top: 0.75rem; font-size: 0.775rem; color: #047857; display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                        {% if complaint.resolved_at %}
+                            <span><strong>Completed On:</strong> {{ complaint.resolved_at.strftime('%d %b %Y at %I:%M %p') }}</span>
+                        {% endif %}
+                        {% if complaint.resolved_by %}
+                            <span><strong>Resolved By:</strong> Administrator ({{ complaint.resolved_by.username }})</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Admin Status Control Panel (Requirements 2 & 8) -->
+            {% if current_user.is_admin %}
+                <div style="padding: 1.25rem; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px;">
+                    <h4 style="font-size: 0.95rem; color: var(--text-primary); margin-bottom: 0.75rem;">
+                        ⚙️ Administrator Workflow Actions
+                    </h4>
+                    
+                    <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; margin-bottom: 1rem;">
+                        {% if complaint.status in ['Assigned', 'Reopened'] %}
+                            <form action="{{ url_for('complaint.start_complaint', complaint_id=complaint.id) }}" method="POST" style="display: inline;">
+                                <input type="hidden" name="next" value="{{ url_for('complaint.view_complaint', complaint_id=complaint.id) }}">
+                                <button type="submit" class="btn btn-primary btn-sm" style="background: #2563EB;">
+                                    Confirm Work Started (Mark In Progress)
+                                </button>
+                            </form>
+                            {% if complaint.assigned_to_staff_id %}
+                                <button type="button" class="btn btn-primary btn-sm" onclick="openResolveModal()">
+                                    Mark Resolved
+                                </button>
+                            {% endif %}
+                        {% elif complaint.status == 'In Progress' %}
+                            <button type="button" class="btn btn-primary btn-sm" onclick="openResolveModal()">
+                                Mark Resolved
+                            </button>
+                        {% elif complaint.status == 'Resolved' %}
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="openReopenModal()">
+                                Reopen Complaint
+                            </button>
+                        {% endif %}
+                    </div>
+
+                    <!-- Staff Assignment / Reassignment Form -->
+                    {% if complaint.status != 'Resolved' %}
+                        <div style="border-top: 1px solid #E2E8F0; padding-top: 0.75rem;">
+                            <label class="form-label" style="font-size: 0.8rem; margin-bottom: 0.35rem;">
+                                {% if complaint.assigned_staff %}Reassign Staff Member{% else %}Assign Staff Member{% endif %}:
+                            </label>
+                            {% if eligible_info and eligible_info.has_eligible_staff %}
+                                <form action="{{ url_for('complaint.assign_complaint', complaint_id=complaint.id) }}" method="POST" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+                                    <input type="hidden" name="next" value="{{ url_for('complaint.view_complaint', complaint_id=complaint.id) }}">
+                                    <select name="staff_id" class="form-control form-select" style="flex: 1; min-width: 200px; height: 36px; font-size: 0.85rem;" required>
+                                        <option value="" disabled {% if not complaint.assigned_to_staff_id %}selected{% endif %}>
+                                            Select Eligible {{ complaint.category }} Staff
+                                        </option>
+                                        {% for s in eligible_info.eligible_staff %}
+                                            <option value="{{ s.id }}" {% if complaint.assigned_to_staff_id == s.id %}selected{% endif %}>
+                                                {{ s.name }} ({{ s.designation }})
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="btn btn-primary btn-sm" style="height: 36px;">
+                                        {% if complaint.assigned_staff %}Update Assignment{% else %}Assign Staff{% endif %}
+                                    </button>
+                                </form>
+                            {% else %}
+                                <div style="color: #B45309; font-size: 0.8rem;">
+                                    ⚠️ No active staff available for {{ complaint.category }} complaints.
+                                    <a href="{{ url_for('staff.add_staff') }}" style="color: var(--primary-color); font-weight: 600;">+ Register Staff</a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <!-- Audit History Timeline (Requirement 6) -->
+            <div>
+                <h3 style="font-size: 1.05rem; color: var(--text-primary); margin-bottom: 0.75rem;">
+                    📋 Status & Assignment History
+                </h3>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    {% for h in complaint.history %}
+                        <div style="display: flex; gap: 0.75rem; font-size: 0.825rem; align-items: flex-start; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color);">
+                            <span style="font-weight: 600; min-width: 95px; color: {% if h.action == 'Resolved' %}#10B981{% elif h.action == 'Reopened' %}#D97706{% elif h.action == 'In Progress' %}#2563EB{% else %}var(--primary-color){% endif %};">
+                                {{ h.action }}:
+                            </span>
+                            <div style="flex: 1;">
+                                <span style="color: var(--text-primary);">{{ h.notes or 'No details' }}</span>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                                    {{ h.created_at.strftime('%d %b %Y, %I:%M %p') }}
+                                    {% if h.changed_by %}
+                                        • Recorded by: <strong>{{ h.changed_by.username }}</strong>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p style="color: var(--text-muted); font-size: 0.85rem;">No history events logged yet.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Assigned Staff Contact Card & Resident Actions -->
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div class="table-container" style="border: 2px solid {% if complaint.assigned_staff %}var(--primary-color){% else %}var(--border-color){% endif %}; padding: 1.5rem; border-radius: 8px;">
+                <h3 style="font-size: 1.05rem; color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>👷</span> Assigned Staff Member
+                </h3>
+
+                {% if complaint.assigned_staff %}
+                    <!-- Active Assigned Staff Contact Card -->
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <div>
+                            <strong style="font-size: 1.2rem; color: var(--text-primary); display: block;">
+                                {{ complaint.assigned_staff.name }}
+                            </strong>
+                            <div style="display: flex; gap: 0.35rem; margin-top: 0.35rem; flex-wrap: wrap;">
+                                <span class="badge badge-info" style="font-size: 0.75rem; background: #E0F2FE; color: #075985;">
+                                    {{ complaint.assigned_staff.designation }}
+                                </span>
+                                <span class="badge badge-secondary" style="font-size: 0.75rem;">
+                                    {{ complaint.assigned_staff.department or complaint.assigned_staff.staff_type }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Mobile Contact Display -->
+                        <div style="background: #F8FAFC; padding: 0.75rem 1rem; border-radius: 6px; border: 1px solid #E2E8F0; margin-top: 0.25rem;">
+                            <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Mobile Number</span>
+                            <span style="font-size: 1.05rem; font-weight: 600; color: var(--text-primary); font-family: monospace;">
+                                📱 {{ complaint.assigned_staff.contact_phone }}
+                            </span>
+                        </div>
+
+                        <!-- Direct Contact Actions (Call & WhatsApp) -->
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                            <!-- Call Button -->
+                            <a href="{{ complaint.assigned_staff.tel_link }}" class="btn btn-primary" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none; padding: 0.65rem; font-size: 0.9rem;">
+                                <span>📞</span> Call Staff Member
+                            </a>
+
+                            <!-- WhatsApp Contact Button -->
+                            <a href="{{ complaint.assigned_staff.whatsapp_link }}" target="_blank" rel="noopener noreferrer" class="btn" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; text-decoration: none; padding: 0.65rem; font-size: 0.9rem; background: #25D366; color: #ffffff; border: none; border-radius: var(--border-radius, 6px); font-weight: 500;">
+                                <span>💬</span> Contact on WhatsApp
+                            </a>
+                        </div>
+
+                        <small style="color: var(--text-muted); font-size: 0.725rem; text-align: center; display: block; margin-top: 0.25rem;">
+                            Assigned on: {{ complaint.assigned_at.strftime('%d %b %Y, %I:%M %p') if complaint.assigned_at else 'Recent' }}
+                        </small>
+                    </div>
+
+                {% else %}
+                    <!-- Awaiting Assignment Placeholder -->
+                    <div style="text-align: center; padding: 1.5rem 0.5rem; color: var(--text-secondary);">
+                        <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">⏳</div>
+                        <p style="font-size: 0.875rem; line-height: 1.5; color: var(--text-secondary); margin: 0;">
+                            Awaiting staff assignment. The assigned staff contact details will appear here.
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Resident Follow-up / Reopen Prompt (Requirement 7) -->
+            {% if complaint.status == 'Resolved' %}
+                <div style="padding: 1.25rem; background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 8px;">
+                    <h4 style="font-size: 0.95rem; color: #92400E; margin-bottom: 0.35rem;">
+                        ⚠️ Still Having Trouble?
+                    </h4>
+                    <p style="font-size: 0.825rem; color: #78350F; margin: 0 0 0.75rem 0; line-height: 1.4;">
+                        If the issue has recurred or was not resolved to your satisfaction, you can reopen this ticket for follow-up maintenance.
+                    </p>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="openReopenModal()" style="width: 100%; font-weight: 600; color: #92400E; border-color: #F59E0B;">
+                        Reopen This Complaint
+                    </button>
+                </div>
+            {% endif %}
+
+            <!-- Resident Mark as Resolved Card -->
+            {% if not current_user.is_admin and complaint.status in ['Assigned', 'In Progress', 'Reopened'] and complaint.assigned_to_staff_id %}
+                <div style="padding: 1.25rem; background: #ECFDF5; border: 1px solid #A7F3D0; border-radius: 8px;">
+                    <h4 style="font-size: 0.95rem; color: #065F46; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.35rem;">
+                        <span>✓</span> Work Completed?
+                    </h4>
+                    <p style="font-size: 0.825rem; color: #047857; margin: 0 0 0.75rem 0; line-height: 1.4;">
+                        Has the assigned worker completed the maintenance job to your satisfaction?
+                    </p>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openResidentResolveModal()" style="width: 100%; font-weight: 600; background: #059669; border-color: #059669; height: 34px;" id="btn-resident-resolve-card">
+                        Mark as Resolved
+                    </button>
+                </div>
+            {% endif %}
+
+            <!-- Privacy Guarantee Notice -->
+            <div style="background: #F0FDF4; border: 1px solid #BBF7D0; border-radius: 6px; padding: 0.75rem; font-size: 0.75rem; color: #166534; display: flex; align-items: center; gap: 0.4rem;">
+                <span>🔒</span>
+                <span>Contact details are securely restricted to authorized flat residents and administrators.</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resolve Complaint Modal -->
+<div class="modal" id="resolve-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Resolve Ticket #{{ complaint.id }}</h3>
+            <button class="modal-close" onclick="closeModal('resolve-modal')">&times;</button>
+        </div>
+        <form id="resolve-form" action="{{ url_for('complaint.resolve_complaint', complaint_id=complaint.id) }}" method="POST">
+            <input type="hidden" name="next" value="{{ url_for('complaint.view_complaint', complaint_id=complaint.id) }}">
+            <div class="form-group">
+                <label for="resolution_notes" class="form-label">Work Performed / Resolution Notes <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">(Optional)</span></label>
+                <textarea id="resolution_notes" name="resolution_notes" class="form-control" rows="4" placeholder="Detail the work performed, repairs executed, or corrective measures taken (optional)..."></textarea>
+                <small style="color: var(--text-muted); font-size: 0.775rem; margin-top: 0.25rem; display: block;">Optional. These notes will be displayed on the resident's ticket view and recorded in history.</small>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('resolve-modal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Submit & Mark Resolved</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Reopen Complaint Modal -->
+<div class="modal" id="reopen-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Reopen Ticket #{{ complaint.id }}</h3>
+            <button class="modal-close" onclick="closeModal('reopen-modal')">&times;</button>
+        </div>
+        <form id="reopen-form" action="{{ url_for('complaint.reopen_complaint', complaint_id=complaint.id) }}" method="POST">
+            <input type="hidden" name="next" value="{{ url_for('complaint.view_complaint', complaint_id=complaint.id) }}">
+            <div class="form-group">
+                <label for="reopen_reason" class="form-label">Reason for Reopening <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">(Optional)</span></label>
+                <textarea id="reopen_reason" name="reason" class="form-control" rows="4" placeholder="Describe what is still broken or why this complaint remains unresolved (optional)..."></textarea>
+                <small style="color: var(--text-muted); font-size: 0.775rem; margin-top: 0.25rem; display: block;">This will return the ticket to Reopened status and append an audit event.</small>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('reopen-modal')">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="background: #D97706; border-color: #D97706;">Confirm Reopen</button>
+            </div>
+        </form>
+    </div>
+</div>
+<!-- Resident Mark as Resolved Confirmation Modal -->
+<div class="modal" id="resident-resolve-modal">
+    <div class="modal-content" style="max-width: 440px;">
+        <div class="modal-header">
+            <h3 class="modal-title" style="color: #065F46;">Confirm Resolution</h3>
+            <button class="modal-close" onclick="closeModal('resident-resolve-modal')">&times;</button>
+        </div>
+        <form id="resident-resolve-form" action="{{ url_for('complaint.resolve_complaint', complaint_id=complaint.id) }}" method="POST">
+            <input type="hidden" name="next" value="{{ url_for('complaint.view_complaint', complaint_id=complaint.id) }}">
+            <div style="padding: 1rem 0; font-size: 1rem; color: var(--text-primary); text-align: center;">
+                <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">✅</div>
+                <strong style="font-size: 1.1rem; display: block; margin-bottom: 0.5rem;">Has this issue been resolved?</strong>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0; line-height: 1.4;">
+                    Clicking Confirm will mark Ticket #{{ complaint.id }} as Resolved and record your confirmation.
+                </p>
+            </div>
+            
+            <div class="modal-footer" style="justify-content: center; gap: 0.75rem;">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('resident-resolve-modal')">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="background: #059669; border-color: #059669;">Confirm</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function openResolveModal() {
+    openModal('resolve-modal');
+}
+
+function openResidentResolveModal() {
+    openModal('resident-resolve-modal');
+}
+
+function openReopenModal() {
+    openModal('reopen-modal');
+}
+</script>
+{% endblock %}

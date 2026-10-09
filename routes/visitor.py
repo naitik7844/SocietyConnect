@@ -10,8 +10,12 @@ visitor_bp = Blueprint('visitor', __name__, url_prefix='/visitor')
 @login_required
 @role_required('Admin', 'Security')
 def list_visitors():
-    visitors = VisitorService.get_all_visitors()
-    return render_template('visitor/visitors.html', visitors=visitors)
+    status = request.args.get('status')
+    if status == 'Checked-In':
+        visitors = VisitorService.get_active_visitors()
+    else:
+        visitors = VisitorService.get_all_visitors()
+    return render_template('visitor/visitors.html', visitors=visitors, current_status=status)
 
 @visitor_bp.route('/add', methods=['GET', 'POST'])
 @login_required

@@ -6,37 +6,37 @@
 }
 
 .alert {
-    padding: 1rem 1.25rem;
+    padding: 0.85rem 1.25rem;
     border-radius: var(--border-radius);
     font-size: 0.9rem;
     font-weight: 500;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    animation: slideDown 0.3s ease;
+    animation: slideDown 0.25s ease;
 }
 
 .alert-success {
-    background: rgba(16, 185, 129, 0.15);
-    border: 1px solid rgba(16, 185, 129, 0.3);
+    background-color: var(--success-bg);
+    border: 1px solid #CDE3CE;
     color: var(--success);
 }
 
 .alert-danger {
-    background: rgba(239, 68, 68, 0.15);
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    background-color: var(--danger-bg);
+    border: 1px solid #F5C7C3;
     color: var(--danger);
 }
 
 .alert-warning {
-    background: rgba(245, 158, 11, 0.15);
-    border: 1px solid rgba(245, 158, 11, 0.3);
+    background-color: var(--warning-bg);
+    border: 1px solid #EEDBB7;
     color: var(--warning);
 }
 
 .alert-info {
-    background: rgba(59, 130, 246, 0.15);
-    border: 1px solid rgba(59, 130, 246, 0.3);
+    background-color: var(--info-bg);
+    border: 1px solid #C9DEE5;
     color: var(--info);
 }
 
@@ -46,6 +46,8 @@
     color: currentColor;
     cursor: pointer;
     opacity: 0.7;
+    font-size: 1.1rem;
+    line-height: 1;
     transition: var(--transition);
 }
 
@@ -56,7 +58,7 @@
 @keyframes slideDown {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateY(-8px);
     }
     to {
         opacity: 1;

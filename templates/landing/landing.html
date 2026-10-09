@@ -1,16 +1,16 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %}SocietyConnect - Housing Society Management Portal{% endblock %}
+{% block title %}SocietyConnect - Residential Community Platform{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
 {% endblock %}
 
 {% block content %}
-<!-- Professional Header Navbar -->
+<!-- Header Navbar -->
 <header class="landing-header">
     <div class="landing-logo">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
         <span>SocietyConnect</span>
     </div>
     <ul class="landing-nav">
@@ -19,55 +19,58 @@
         <li><a href="#stats">Overview</a></li>
         <li><a href="#faq">FAQs</a></li>
     </ul>
-    <div style="display: flex; gap: 1rem;">
+    <div style="display: flex; gap: 0.75rem;">
         <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm" style="padding: 0.5rem 1.25rem;">Login</a>
         <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm" style="padding: 0.5rem 1.25rem;">Register</a>
     </div>
 </header>
 
-<!-- Hero Split Section -->
+<!-- Hero Section -->
 <section class="landing-hero" id="hero">
     <div class="hero-left">
-        <div class="hero-badge">Smart Living Ecosystem</div>
+        <div class="hero-badge">
+            <span class="hero-badge-accent"></span>
+            Smart Residential Platform
+        </div>
         <h1 class="hero-title">Automate your Gated Community</h1>
         <p class="hero-subtitle">
-            A premium, glassmorphic management platform designed to automate visitor entry, streamline maintenance dues billing, resolve resident tickets, and announce events.
+            A real, modern, premium platform designed to streamline visitor entry, maintenance billing, resident ticket resolution, and community announcements.
         </p>
         <div class="hero-actions">
-            <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Enter Portal</a>
-            <a href="#features" class="btn btn-secondary">Explore Features</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">Enter Portal</a>
+            <a href="#features" class="btn btn-secondary btn-lg">Explore Features</a>
         </div>
     </div>
     
     <div class="hero-right">
-        <!-- Floating Interactive Portal Mockup Card -->
+        <!-- Floating Interactive Gate Check-in Card -->
         <div class="mockup-card">
             <div class="mockup-header">
                 <div>
-                    <strong style="font-size: 0.95rem; display: block;">Gate Control Desk</strong>
-                    <span style="font-size: 0.75rem; color: var(--text-muted);">Active Check-Ins</span>
+                    <strong style="font-size: 0.95rem; display: block; color: var(--text-primary);">Gate Control Desk</strong>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">Active Society Check-Ins</span>
                 </div>
                 <span class="badge badge-success">Online</span>
             </div>
             
             <div class="mockup-item">
                 <div>
-                    <strong style="font-size: 0.85rem; display: block;">Guest: John Doe</strong>
-                    <span style="font-size: 0.7rem; color: var(--text-muted);">Flat A-102 • Delivery</span>
+                    <strong style="font-size: 0.85rem; display: block; color: var(--text-primary);">Guest: John Doe</strong>
+                    <span style="font-size: 0.7rem; color: var(--text-secondary);">Flat A-102 • Delivery</span>
                 </div>
-                <span style="font-size: 0.75rem; color: var(--warning); font-weight: 600;">Active</span>
+                <span class="badge badge-warning">Active</span>
             </div>
 
             <div class="mockup-item">
                 <div>
-                    <strong style="font-size: 0.85rem; display: block;">Guest: Alice Smith</strong>
-                    <span style="font-size: 0.7rem; color: var(--text-muted);">Flat C-101 • Maintenance</span>
+                    <strong style="font-size: 0.85rem; display: block; color: var(--text-primary);">Guest: Alice Smith</strong>
+                    <span style="font-size: 0.7rem; color: var(--text-secondary);">Flat C-101 • Maintenance</span>
                 </div>
-                <span style="font-size: 0.75rem; color: var(--warning); font-weight: 600;">Active</span>
+                <span class="badge badge-warning">Active</span>
             </div>
             
-            <div class="mockup-item" style="border-style: dashed; background: none; justify-content: center; cursor: pointer;">
-                <span style="font-size: 0.8rem; color: var(--primary-color); font-weight: 600;">+ Log New Entry</span>
+            <div class="mockup-item" style="border-style: dashed; background: var(--very-light-sage); justify-content: center; cursor: pointer;">
+                <span style="font-size: 0.8rem; color: var(--primary-color); font-weight: 600;">+ Log New Visitor Entry</span>
             </div>
         </div>
     </div>
@@ -89,49 +92,49 @@
     </div>
 </section>
 
-<!-- Detailed Features Section -->
+<!-- Features Section -->
 <section class="landing-features-section" id="features">
     <h2 class="section-title">Engineered for Modern Housing</h2>
-    <p class="section-subtitle">A central ecosystem offering modules tailored for administrators, security personnel, and residents.</p>
+    <p class="section-subtitle">Tailored modules built for society administrators, security guards, and residents.</p>
     
     <div class="features-grid">
         <div class="feature-box">
-            <div class="feature-box-icon">
+            <div class="feature-box-icon stat-residents">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
             </div>
             <h3 class="feature-box-title">Resident Registry</h3>
-            <p class="feature-box-desc">Maintain dynamic flats occupancy records, vehicles logs, and link profiles directly to specific buildings and towers.</p>
+            <p class="feature-box-desc">Maintain flat occupancy records, vehicle registrations, and profiles directly linked to towers.</p>
         </div>
 
         <div class="feature-box">
-            <div class="feature-box-icon" style="color: var(--warning); background: rgba(245,158,11,0.1);">
+            <div class="feature-box-icon stat-visitors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
             </div>
-            <h3 class="feature-box-title">Security Desk</h3>
-            <p class="feature-box-desc">Log gate check-ins and check-outs in real time, validating guest profiles and maintaining continuous entry ledgers.</p>
+            <h3 class="feature-box-title">Security Checkpoint</h3>
+            <p class="feature-box-desc">Log gate check-ins and check-outs in real time, validating guest details and maintaining continuous entry ledgers.</p>
         </div>
 
         <div class="feature-box">
-            <div class="feature-box-icon" style="color: var(--success); background: rgba(16,185,129,0.1);">
+            <div class="feature-box-icon stat-payments">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
             </div>
             <h3 class="feature-box-title">Maintenance Ledger</h3>
-            <p class="feature-box-desc">Generate monthly billing invoices individually or in bulk per tower, and process resident transaction payments directly.</p>
+            <p class="feature-box-desc">Generate monthly billing invoices per tower, and process resident dues transactions securely.</p>
         </div>
 
         <div class="feature-box">
-            <div class="feature-box-icon" style="color: var(--info); background: rgba(59,130,246,0.1);">
+            <div class="feature-box-icon stat-complaints">
                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
             </div>
-            <h3 class="feature-box-title">Smart Complaints</h3>
-            <p class="feature-box-desc">Raise maintenance tickets, assign them to technicians automatically, and view resolving notes with real-time status updates.</p>
+            <h3 class="feature-box-title">Helpdesk Complaints</h3>
+            <p class="feature-box-desc">Raise maintenance tickets, track resolution status, and manage resolution comments transparently.</p>
         </div>
     </div>
 </section>
 
-<!-- FAQs Accordion Section -->
+<!-- FAQs Section -->
 <section class="landing-faq" id="faq">
-    <h2 class="section-title" style="text-align: center; margin-bottom: 4rem;">Frequently Asked Questions</h2>
+    <h2 class="section-title" style="text-align: center; margin-bottom: 3.5rem;">Frequently Asked Questions</h2>
     <div class="faq-container">
         <div class="faq-item" onclick="toggleFaq(this)">
             <div class="faq-question">

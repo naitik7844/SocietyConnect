@@ -4,9 +4,10 @@
     right: 0;
     left: var(--sidebar-width);
     height: var(--navbar-height);
-    background: rgba(9, 13, 22, 0.7);
-    backdrop-filter: var(--glass-blur);
-    border-bottom: 1px solid var(--border-color);
+    background: var(--navbar-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--navbar-border);
     padding: 0 2rem;
     display: flex;
     align-items: center;
@@ -32,40 +33,112 @@
 .navbar-toggle svg {
     width: 24px;
     height: 24px;
+    stroke: var(--text-primary);
+}
+
+/* Navbar Search Box */
+.navbar-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.navbar-search input {
+    background: var(--search-bg);
+    border: 1px solid var(--search-border);
+    border-radius: 8px;
+    padding: 0.5rem 1rem 0.5rem 2.25rem;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    width: 240px;
+    transition: var(--transition);
+}
+
+.navbar-search input:focus {
+    outline: none;
+    border-color: var(--search-focus);
+    box-shadow: var(--input-focus-ring);
+}
+
+.navbar-search svg {
+    position: absolute;
+    left: 0.75rem;
+    width: 16px;
+    height: 16px;
+    stroke: var(--search-icon);
 }
 
 .navbar-right {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 1.25rem;
 }
 
+/* Notification Button */
+.navbar-notification-btn {
+    position: relative;
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border-radius: 50%;
+    color: var(--notification-icon);
+    transition: var(--transition);
+}
+
+.navbar-notification-btn:hover {
+    background: var(--very-light-sage);
+}
+
+.navbar-notification-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--notification-icon);
+}
+
+.notification-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    background-color: var(--notification-badge);
+    border-radius: 50%;
+    border: 2px solid #FFFFFF;
+}
+
+/* User Profile Badge */
 .user-profile {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.5rem 1rem;
-    background: rgba(255, 255, 255, 0.05);
+    padding: 0.4rem 0.85rem;
+    background: var(--card-bg);
     border: 1px solid var(--border-color);
-    border-radius: 50px;
+    border-radius: 30px;
+    box-shadow: 0 2px 8px rgba(37, 42, 38, 0.04);
     transition: var(--transition);
 }
 
 .user-profile:hover {
-    border-color: var(--border-hover);
-    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--border-strong);
+    background: var(--card-hover);
 }
 
 .user-avatar {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: var(--gradient-accent);
+    background: var(--primary-color);
+    border: 2px solid var(--profile-avatar-border);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
-    color: white;
+    color: #FFFFFF;
     font-size: 0.85rem;
 }
 
@@ -77,6 +150,7 @@
 .user-name {
     font-size: 0.875rem;
     font-weight: 600;
+    color: var(--text-primary);
 }
 
 .user-role {
@@ -90,5 +164,8 @@
     }
     .navbar-toggle {
         display: block;
+    }
+    .navbar-search input {
+        width: 160px;
     }
 }

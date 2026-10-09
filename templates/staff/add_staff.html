@@ -1,0 +1,114 @@
+{% extends 'layouts/dashboard_base.html' %}
+
+{% block title %}Register Authorized Staff | SocietyConnect{% endblock %}
+
+{% block content %}
+<div class="table-container" style="max-width: 650px; margin: 0 auto;">
+    <h2 class="table-title" style="margin-bottom: 0.5rem;">Register Authorized Staff</h2>
+    <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1.5rem;">
+        Add maintenance technicians, plumbers, electricians, cleaners, and security staff for society complaint assignments. Staff are managed directly by administrators.
+    </p>
+
+    <form action="{{ url_for('staff.add_staff') }}" method="POST" id="staff-form">
+        <!-- Full Name -->
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+            <label for="full_name" class="form-label">Full Name <span style="color: #DC2626;">*</span></label>
+            <input type="text" id="full_name" name="full_name" class="form-control" placeholder="e.g. Ramesh Kumar" required minlength="2">
+        </div>
+
+        <!-- Mobile Number with Country Code -->
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+            <label for="phone" class="form-label">Mobile Number <span style="color: #DC2626;">*</span></label>
+            <div class="phone-input-container">
+                <select name="country_code" id="country_code" class="form-control form-select phone-country-code" required>
+                    <option value="+91" selected>+91 (IN)</option>
+                    <option value="+1">+1 (US)</option>
+                    <option value="+44">+44 (UK)</option>
+                    <option value="+971">+971 (AE)</option>
+                </select>
+                <input type="tel" id="phone" name="phone" class="form-control" placeholder="10-digit mobile number" pattern="[0-9]{10}" maxlength="10" required>
+            </div>
+            <small style="color: var(--text-muted); font-size: 0.775rem; margin-top: 0.25rem; display: block;">Used by residents to contact assigned staff via Call or WhatsApp.</small>
+        </div>
+
+        <!-- Department and Designation Grid -->
+        <div class="form-grid" style="margin-bottom: 1.25rem;">
+            <div class="form-group">
+                <label for="department" class="form-label">Department <span style="color: #DC2626;">*</span></label>
+                <select id="department" name="department" class="form-control form-select" required onchange="handleDepartmentChange()">
+                    <option value="" disabled selected>Select Department</option>
+                    {% for dept, desigs in departments.items() %}
+                        <option value="{{ dept }}">{{ dept }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="designation" class="form-label">Designation <span style="color: #DC2626;">*</span></label>
+                <select id="designation" name="designation" class="form-control form-select" required disabled>
+                    <option value="" disabled selected>Select Department first</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Optional Fields: Salary and Joining Date -->
+        <div class="form-grid" style="margin-bottom: 1.5rem;">
+            <div class="form-group">
+                <label for="salary" class="form-label">Monthly Salary (INR) <span style="color: var(--text-muted); font-weight: normal;">(Optional)</span></label>
+                <input type="number" step="0.01" min="0" id="salary" name="salary" class="form-control" placeholder="e.g. 25000">
+            </div>
+
+            <div class="form-group">
+                <label for="joining_date" class="form-label">Joining Date <span style="color: var(--text-muted); font-weight: normal;">(Optional)</span></label>
+                <input type="date" id="joining_date" name="joining_date" class="form-control">
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+            <a href="{{ url_for('staff.list_staff') }}" class="btn btn-secondary" style="flex: 1; text-align: center;">Cancel</a>
+            <button type="submit" class="btn btn-primary" style="flex: 1;">Register Staff Member</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const departmentMapping = {{ departments|tojson }};
+
+function handleDepartmentChange() {
+    const deptSelect = document.getElementById('department');
+    const desigSelect = document.getElementById('designation');
+    const selectedDept = deptSelect.value;
+
+    desigSelect.innerHTML = '';
+
+    if (!selectedDept || !departmentMapping[selectedDept]) {
+        desigSelect.disabled = true;
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = 'Select Department first';
+        opt.disabled = true;
+        opt.selected = true;
+        desigSelect.appendChild(opt);
+        return;
+    }
+
+    desigSelect.disabled = false;
+    const defaultOpt = document.createElement('option');
+    defaultOpt.value = '';
+    defaultOpt.textContent = 'Select Designation';
+    defaultOpt.disabled = true;
+    defaultOpt.selected = true;
+    desigSelect.appendChild(defaultOpt);
+
+    const designations = departmentMapping[selectedDept];
+    designations.forEach(desig => {
+        const opt = document.createElement('option');
+        opt.value = desig;
+        opt.textContent = desig;
+        desigSelect.appendChild(opt);
+    });
+}
+</script>
+{% endblock %}

@@ -3,10 +3,10 @@
 {% block title %}Generate Bill | SocietyConnect{% endblock %}
 
 {% block content %}
-<div class="table-container" style="max-width: 500px; margin: 0 auto;">
+<div class="table-container" style="max-width: 540px; margin: 0 auto;">
     <h2 class="table-title" style="margin-bottom: 1.5rem;">Generate Maintenance Bill</h2>
     
-    <form action="{{ url_for('maintenance.add_bill') }}" method="POST">
+    <form action="{{ url_for('maintenance.add_bill') }}" method="POST" id="bill-form">
         <div class="form-group">
             <label for="bill_type" class="form-label">Billing Type</label>
             <select id="bill_type" name="bill_type" class="form-control form-select" required onchange="toggleBillingFields()">
@@ -32,15 +32,18 @@
             </div>
         </div>
 
-        <!-- Individual flat selection -->
+        <!-- Searchable Autocomplete Individual Flat Selection -->
         <div class="form-group" id="flat-selection-group">
-            <label for="flat_id" class="form-label">Destination Flat</label>
-            <select id="flat_id" name="flat_id" class="form-control form-select">
-                <option value="" disabled selected>Select Flat</option>
-                {% for flat in flats %}
-                    <option value="{{ flat.id }}">{{ flat.building.name }} - {{ flat.flat_number }}</option>
-                {% endfor %}
-            </select>
+            <label for="flat-search-input" class="form-label">Search Flat</label>
+            <div class="autocomplete-container" id="autocomplete-wrapper">
+                <input type="text" 
+                       id="flat-search-input" 
+                       class="form-control" 
+                       placeholder="Search by flat, resident name, or tower..." 
+                       autocomplete="off">
+                <input type="hidden" id="flat_id" name="flat_id" value="">
+                <div id="flat-dropdown-results" class="autocomplete-results" style="display: none;"></div>
+            </div>
         </div>
 
         <!-- Bulk building selection -->
@@ -64,26 +67,179 @@
 
 {% block extra_js %}
 <script>
+const flatsData = {{ flats_data|tojson }};
+let filteredFlats = [];
+let selectedIndex = -1;
+
 function toggleBillingFields() {
     const billType = document.getElementById('bill_type').value;
     const flatGroup = document.getElementById('flat-selection-group');
     const buildingGroup = document.getElementById('building-selection-group');
-    const flatSelect = document.getElementById('flat_id');
     const buildingSelect = document.getElementById('building_id');
     
     if (billType === 'Individual') {
         flatGroup.style.display = 'block';
-        flatSelect.required = true;
         buildingGroup.style.display = 'none';
         buildingSelect.required = false;
     } else {
         flatGroup.style.display = 'none';
-        flatSelect.required = false;
         buildingGroup.style.display = 'block';
         buildingSelect.required = true;
     }
 }
-// Run on load
-document.addEventListener('DOMContentLoaded', toggleBillingFields);
+
+document.addEventListener('DOMContentLoaded', () => {
+    toggleBillingFields();
+
+    const searchInput = document.getElementById('flat-search-input');
+    const flatHiddenInput = document.getElementById('flat_id');
+    const resultsContainer = document.getElementById('flat-dropdown-results');
+    const autocompleteWrapper = document.getElementById('autocomplete-wrapper');
+    const form = document.getElementById('bill-form');
+
+    function openDropdown(query = '') {
+        const cleanQuery = query.trim().toLowerCase();
+        if (cleanQuery === '') {
+            filteredFlats = [...flatsData];
+        } else {
+            filteredFlats = flatsData.filter(item => {
+                const flatNum = item.flat_number.toLowerCase();
+                const bldgName = item.building_name.toLowerCase();
+                const resName = item.resident_name.toLowerCase();
+                return flatNum.includes(cleanQuery) || bldgName.includes(cleanQuery) || resName.includes(cleanQuery);
+            });
+        }
+
+        selectedIndex = -1;
+        resultsContainer.innerHTML = '';
+
+        if (filteredFlats.length === 0) {
+            const noResDiv = document.createElement('div');
+            noResDiv.className = 'autocomplete-no-results';
+            noResDiv.innerText = 'No matching flat found';
+            resultsContainer.appendChild(noResDiv);
+        } else {
+            filteredFlats.forEach((item, index) => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'autocomplete-item';
+                if (flatHiddenInput.value == item.id) {
+                    itemDiv.classList.add('selected');
+                }
+                
+                // Format: Flat Number — Resident Name (e.g. A1-101 — Rahul Sharma)
+                itemDiv.innerHTML = `
+                    <span class="flat-label">${item.flat_number}</span>
+                    <span class="resident-label">— ${item.resident_name} (${item.building_name})</span>
+                `;
+
+                itemDiv.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    selectItem(item);
+                });
+
+                resultsContainer.appendChild(itemDiv);
+            });
+        }
+
+        resultsContainer.style.display = 'block';
+    }
+
+    function closeDropdown() {
+        resultsContainer.style.display = 'none';
+        selectedIndex = -1;
+    }
+
+    function selectItem(item) {
+        searchInput.value = `${item.flat_number} — ${item.resident_name}`;
+        flatHiddenInput.value = item.id;
+        closeDropdown();
+    }
+
+    function updateHighlight() {
+        const items = resultsContainer.querySelectorAll('.autocomplete-item');
+        items.forEach((item, index) => {
+            if (index === selectedIndex) {
+                item.classList.add('highlighted');
+                item.scrollIntoView({ block: 'nearest' });
+            } else {
+                item.classList.remove('highlighted');
+            }
+        });
+    }
+
+    // Event Listeners for Search Input
+    searchInput.addEventListener('focus', () => {
+        // If a selection was already made, clear or show full list
+        openDropdown(searchInput.value.includes('—') ? '' : searchInput.value);
+    });
+
+    searchInput.addEventListener('click', () => {
+        if (resultsContainer.style.display === 'none') {
+            openDropdown(searchInput.value.includes('—') ? '' : searchInput.value);
+        }
+    });
+
+    searchInput.addEventListener('input', (e) => {
+        // Clear hidden input if user modifies text after selecting
+        flatHiddenInput.value = '';
+        openDropdown(e.target.value);
+    });
+
+    // Keyboard Navigation Support
+    searchInput.addEventListener('keydown', (e) => {
+        const isDropdownVisible = resultsContainer.style.display === 'block';
+
+        if (e.key === 'ArrowDown') {
+            if (!isDropdownVisible) {
+                openDropdown(searchInput.value);
+                return;
+            }
+            if (filteredFlats.length > 0) {
+                e.preventDefault();
+                selectedIndex = (selectedIndex + 1) % filteredFlats.length;
+                updateHighlight();
+            }
+        } else if (e.key === 'ArrowUp') {
+            if (isDropdownVisible && filteredFlats.length > 0) {
+                e.preventDefault();
+                selectedIndex = (selectedIndex - 1 + filteredFlats.length) % filteredFlats.length;
+                updateHighlight();
+            }
+        } else if (e.key === 'Enter') {
+            if (isDropdownVisible) {
+                e.preventDefault();
+                if (selectedIndex >= 0 && selectedIndex < filteredFlats.length) {
+                    selectItem(filteredFlats[selectedIndex]);
+                } else if (filteredFlats.length > 0) {
+                    selectItem(filteredFlats[0]);
+                }
+            }
+        } else if (e.key === 'Escape') {
+            if (isDropdownVisible) {
+                e.preventDefault();
+                closeDropdown();
+            }
+        }
+    });
+
+    // Close dropdown on outside click
+    document.addEventListener('click', (e) => {
+        if (!autocompleteWrapper.contains(e.target)) {
+            closeDropdown();
+        }
+    });
+
+    // Form Submission Validation
+    form.addEventListener('submit', (e) => {
+        const billType = document.getElementById('bill_type').value;
+        if (billType === 'Individual') {
+            if (!flatHiddenInput.value) {
+                e.preventDefault();
+                alert('Please select a valid flat from the search dropdown.');
+                searchInput.focus();
+            }
+        }
+    });
+});
 </script>
 {% endblock %}

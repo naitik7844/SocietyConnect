@@ -11,10 +11,15 @@ dashboard_bp = Blueprint('dashboard', __name__, url_prefix='/dashboard')
 def index():
     if current_user.is_admin:
         # Fetch Admin Stats
+        pending_count = Complaint.query.filter(Complaint.status.in_(['Pending', 'Reopened'])).count()
+        active_complaints = Complaint.query.filter(Complaint.status != 'Resolved').all()
+        overdue_count = sum(1 for c in active_complaints if c.is_overdue)
+
         stats = {
             'total_residents': Resident.query.count(),
             'active_visitors': Visitor.query.filter_by(status='Checked-In').count(),
-            'pending_complaints': Complaint.query.filter_by(status='Pending').count(),
+            'pending_complaints': pending_count,
+            'overdue_complaints': overdue_count,
             'total_vehicles': Vehicle.query.count()
         }
         
@@ -65,7 +70,7 @@ def index():
             'building_name': flat.building.name,
             'occupancy_status': flat.occupancy_status,
             'unpaid_bills_count': Maintenance.query.filter_by(flat_id=flat.id, status='Unpaid').count(),
-            'pending_complaints_count': Complaint.query.filter_by(flat_id=flat.id, status='Pending').count()
+            'pending_complaints_count': Complaint.query.filter_by(flat_id=flat.id).filter(Complaint.status.in_(['Pending', 'Reopened'])).count()
         }
         
         bills = Maintenance.query.filter_by(flat_id=flat.id).order_by(Maintenance.due_date.desc()).all()
@@ -79,5 +84,8 @@ def index():
             complaints=complaints,
             notices=notices
         )
-        
+
+    elif current_user.role and current_user.role.name == 'Staff':
+        return redirect(url_for('complaint.list_complaints'))
+
     return redirect(url_for('auth.login'))

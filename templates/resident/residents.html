@@ -7,7 +7,7 @@
     <div class="table-header-row" style="flex-wrap: wrap; gap: 1rem; align-items: center;">
         <div>
             <h1 class="table-title">Resident Directory</h1>
-            <p style="color: var(--text-muted); font-size: 0.875rem;">Manage resident profiles, emergency details, and registration status</p>
+            <p style="color: var(--text-secondary); font-size: 0.875rem;">Manage resident profiles, emergency details, and registration status</p>
         </div>
         <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
             <form action="{{ url_for('resident.list_residents') }}" method="GET" style="display: flex; gap: 0.5rem; margin: 0; align-items: center;">
@@ -21,7 +21,6 @@
         </div>
     </div>
 
-    
     <table class="custom-table">
         <thead>
             <tr>
@@ -37,7 +36,7 @@
             {% for resident in residents %}
                 <tr>
                     <td>
-                        <strong style="display: block;">{{ resident.user.username }}</strong>
+                        <strong style="display: block; color: var(--text-primary);">{{ resident.user.username }}</strong>
                         <span style="font-size: 0.75rem; color: var(--text-muted);">{{ resident.user.email }} | {{ resident.user.phone }}</span>
                     </td>
                     <td>{% if resident.flat %}{{ resident.flat.building.name }} - {{ resident.flat.flat_number }}{% else %}<span class="badge badge-warning">Unassigned</span>{% endif %}</td>
@@ -46,9 +45,9 @@
                         {% if resident.user.status == 'Active' %}
                             <span class="badge badge-success">Active</span>
                         {% elif resident.user.status == 'Pending' %}
-                            <span class="badge badge-warning">Pending Approval</span>
+                            <span class="badge badge-pending">Pending Approval</span>
                         {% else %}
-                            <span class="badge badge-danger">Inactive</span>
+                            <span class="badge badge-inactive">Inactive</span>
                         {% endif %}
                     </td>
                     <td>{{ resident.emergency_contact or 'N/A' }}</td>

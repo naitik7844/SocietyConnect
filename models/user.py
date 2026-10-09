@@ -40,6 +40,10 @@ class User(db.Model, UserMixin):
     def is_resident(self):
         return self.role.name in ['Resident', 'Owner']
 
+    @property
+    def is_staff(self):
+        return self.staff is not None or self.role.name in ['Staff', 'Security']
+
     def to_dict(self):
         return {
             'id': self.id,

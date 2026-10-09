@@ -4,9 +4,8 @@
     left: 0;
     width: var(--sidebar-width);
     height: 100vh;
-    background: rgba(17, 24, 39, 0.85);
-    backdrop-filter: var(--glass-blur);
-    border-right: 1px solid var(--border-color);
+    background: linear-gradient(180deg, var(--sidebar-bg) 0%, var(--sidebar-variation) 100%);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
     padding: 1.5rem;
     z-index: 100;
     transition: var(--transition);
@@ -18,51 +17,89 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--sidebar-divider);
+    margin-bottom: 1.5rem;
+}
+
+.sidebar-brand svg {
+    stroke: var(--sidebar-logo-icon);
+    color: var(--sidebar-logo-icon);
 }
 
 .sidebar-brand h2 {
     font-size: 1.25rem;
     font-weight: 700;
     letter-spacing: 0.5px;
-    background: var(--gradient-accent);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--sidebar-logo-text);
+    -webkit-text-fill-color: var(--sidebar-logo-text);
 }
 
 .sidebar-menu {
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.35rem;
 }
 
 .sidebar-menu li a {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.85rem;
     padding: 0.75rem 1rem;
-    color: var(--text-muted);
+    color: var(--sidebar-text);
     border-radius: var(--border-radius);
     font-weight: 500;
+    font-size: 0.925rem;
     transition: var(--transition);
-}
-
-.sidebar-menu li a:hover, 
-.sidebar-menu li.active a {
-    color: var(--text-primary);
-    background: rgba(99, 102, 241, 0.15);
-    border: 1px solid rgba(99, 102, 241, 0.3);
 }
 
 .sidebar-menu li a svg {
     width: 20px;
     height: 20px;
-    stroke: currentColor;
+    stroke: var(--sidebar-icon);
     stroke-width: 2;
     fill: none;
+    transition: var(--transition);
+}
+
+/* Hover State */
+.sidebar-menu li a:hover {
+    color: var(--sidebar-hover-text);
+    background: var(--sidebar-hover-bg);
+}
+
+.sidebar-menu li a:hover svg {
+    stroke: var(--sidebar-hover-icon);
+}
+
+/* Active State */
+.sidebar-menu li.active a {
+    color: var(--sidebar-active-text);
+    background: var(--sidebar-active-bg);
+    font-weight: 600;
+}
+
+.sidebar-menu li.active a svg {
+    stroke: var(--sidebar-active-icon);
+}
+
+/* User Profile Section in Sidebar (if included) */
+.sidebar-user {
+    margin-top: auto;
+    padding: 0.85rem 1rem;
+    background: var(--sidebar-user-bg);
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid var(--sidebar-divider);
+}
+
+.sidebar-divider {
+    height: 1px;
+    background: var(--sidebar-divider);
+    margin: 1rem 0;
 }
 
 /* Sidebar responsive toggle */

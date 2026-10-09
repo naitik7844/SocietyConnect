@@ -1,0 +1,82 @@
+{% extends 'layouts/dashboard_base.html' %}
+
+{% block title %}Vehicle Registry | SocietyConnect{% endblock %}
+
+{% block content %}
+<div class="table-container">
+    <div class="table-header-row" style="flex-wrap: wrap; gap: 1rem; align-items: center;">
+        <div>
+            <h1 class="table-title">Vehicle Registry</h1>
+            <p style="color: var(--text-secondary); font-size: 0.875rem;">Manage registered 2-wheelers and 4-wheelers across society residences</p>
+        </div>
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <form action="{{ url_for('vehicle.list_vehicles') }}" method="GET" style="display: flex; gap: 0.5rem; margin: 0; align-items: center;">
+                <input type="text" name="q" value="{{ search_query or '' }}" placeholder="Search vehicle no, owner, flat..." class="form-control" style="width: 240px; margin-bottom: 0; height: 38px;">
+                <button type="submit" class="btn btn-secondary" style="height: 38px; display: flex; align-items: center; justify-content: center; padding: 0 1rem;">Search</button>
+                {% if search_query %}
+                    <a href="{{ url_for('vehicle.list_vehicles') }}" class="btn btn-danger" style="height: 38px; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; padding: 0 1rem; box-sizing: border-box; border-radius: 8px;">Clear</a>
+                {% endif %}
+            </form>
+            {% if current_user.is_admin %}
+                <a href="{{ url_for('vehicle.add_vehicle') }}" class="btn btn-primary" style="height: 38px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">Register Vehicle</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <table class="custom-table">
+        <thead>
+            <tr>
+                <th>Registration Number</th>
+                <th>Type</th>
+                <th>Owner Name</th>
+                <th>Assigned Flat</th>
+                {% if current_user.is_admin %}
+                    <th>Actions</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for vehicle in vehicles %}
+                <tr>
+                    <td>
+                        <strong style="display: block; color: var(--text-primary); font-family: monospace; font-size: 1rem; letter-spacing: 0.5px;">{{ vehicle.vehicle_number }}</strong>
+                    </td>
+                    <td>
+                        {% if vehicle.vehicle_type == '2 Wheeler' %}
+                            <span class="badge badge-warning" style="background-color: var(--warning-bg); color: var(--warning-strong);">2 Wheeler</span>
+                        {% else %}
+                            <span class="badge badge-success" style="background-color: var(--stat-maintenance-bg); color: var(--stat-maintenance-icon);">4 Wheeler</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span style="font-weight: 500; color: var(--text-primary);">{{ vehicle.owner_name }}</span>
+                    </td>
+                    <td>
+                        {% if vehicle.flat %}
+                            <span style="font-weight: 500;">{{ vehicle.flat.building.name }} - {{ vehicle.flat.flat_number }}</span>
+                        {% else %}
+                            <span class="badge badge-warning">Unassigned</span>
+                        {% endif %}
+                    </td>
+                    {% if current_user.is_admin %}
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <a href="{{ url_for('vehicle.edit_vehicle', vehicle_id=vehicle.id) }}" class="btn btn-secondary btn-sm">Edit</a>
+                                <form action="{{ url_for('vehicle.delete_vehicle', vehicle_id=vehicle.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to remove this vehicle?');">
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    {% endif %}
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="{% if current_user.is_admin %}5{% else %}4{% endif %}" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">
+                        No vehicles registered yet.
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

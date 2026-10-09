@@ -6,6 +6,8 @@ from routes.visitor import visitor_bp
 from routes.complaint import complaint_bp
 from routes.maintenance import maintenance_bp
 from routes.notice import notice_bp
+from routes.vehicle import vehicle_bp
+from routes.staff import staff_bp
 
 __all__ = [
     'home_bp',
@@ -15,5 +17,7 @@ __all__ = [
     'visitor_bp',
     'complaint_bp',
     'maintenance_bp',
-    'notice_bp'
+    'notice_bp',
+    'vehicle_bp',
+    'staff_bp'
 ]

@@ -4,12 +4,18 @@
 
 {% block content %}
 <div class="table-container">
-    <div class="table-header-row">
+    <div class="table-header-row" style="flex-wrap: wrap; gap: 1rem; align-items: center;">
         <div>
             <h1 class="table-title">Visitor Ledger</h1>
-            <p style="color: var(--text-muted); font-size: 0.875rem;">Full list of past and active checked-in visitors</p>
+            <p style="color: var(--text-secondary); font-size: 0.875rem;">Full list of past and active checked-in visitors</p>
         </div>
-        <a href="{{ url_for('visitor.add_visitor') }}" class="btn btn-primary">Log Visitor Entry</a>
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+            <div style="display: inline-flex; background: var(--very-light-sage); padding: 4px; border-radius: 8px; border: 1px solid var(--light-sage); gap: 4px;">
+                <a href="{{ url_for('visitor.list_visitors') }}" class="btn btn-sm {% if not current_status %}btn-primary{% else %}btn-secondary{% endif %}" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; text-decoration: none;">All Visitors</a>
+                <a href="{{ url_for('visitor.list_visitors', status='Checked-In') }}" class="btn btn-sm {% if current_status == 'Checked-In' %}btn-primary{% else %}btn-secondary{% endif %}" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; text-decoration: none;">Active Only</a>
+            </div>
+            <a href="{{ url_for('visitor.add_visitor') }}" class="btn btn-primary" style="height: 34px; display: inline-flex; align-items: center; justify-content: center;">Log Visitor Entry</a>
+        </div>
     </div>
     
     <table class="custom-table">
@@ -27,13 +33,13 @@
             {% for visitor in visitors %}
                 <tr>
                     <td>
-                        <strong style="display: block;">{{ visitor.name }}</strong>
+                        <strong style="display: block; color: var(--text-primary);">{{ visitor.name }}</strong>
                         <span style="font-size: 0.75rem; color: var(--text-muted);">{{ visitor.phone }}</span>
                     </td>
                     <td>{{ visitor.flat.building.name }} - {{ visitor.flat.flat_number }}</td>
                     <td>{{ visitor.purpose }}</td>
                     <td>
-                        <div style="font-size: 0.85rem;">
+                        <div style="font-size: 0.85rem; color: var(--text-primary);">
                             <strong>In:</strong> {{ visitor.check_in_time.strftime('%Y-%m-%d %H:%M') }}
                         </div>
                         {% if visitor.check_out_time %}

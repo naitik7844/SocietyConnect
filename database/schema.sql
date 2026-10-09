@@ -72,11 +72,15 @@ CREATE TABLE IF NOT EXISTS visitors (
 -- 7. Staff table
 CREATE TABLE IF NOT EXISTS staff (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT UNIQUE,
-    staff_type VARCHAR(50) NOT NULL, -- Security, Maintenance, Admin, Other
+    user_id INT UNIQUE NULL,
+    full_name VARCHAR(150) NULL,
+    phone VARCHAR(20) NULL,
+    department VARCHAR(50) NULL, -- Plumbing, Electrical, Security, Cleaning, Other / General
+    staff_type VARCHAR(50) NOT NULL DEFAULT 'Maintenance', -- Security, Maintenance, Admin, Other
     designation VARCHAR(100),
     salary DECIMAL(10, 2),
     joining_date DATE,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -89,13 +93,37 @@ CREATE TABLE IF NOT EXISTS complaints (
     flat_id INT NOT NULL,
     created_by_user_id INT NOT NULL,
     assigned_to_staff_id INT NULL,
-    status VARCHAR(50) DEFAULT 'Pending', -- Pending, In Progress, Resolved
+    assigned_at TIMESTAMP NULL,
+    assigned_by_user_id INT NULL,
+    status VARCHAR(50) DEFAULT 'Pending', -- Pending, Assigned, In Progress, Resolved
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     resolution_notes TEXT,
+    resolved_at TIMESTAMP NULL,
+    resolved_by_user_id INT NULL,
     FOREIGN KEY (flat_id) REFERENCES flats(id) ON DELETE CASCADE,
     FOREIGN KEY (created_by_user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (assigned_to_staff_id) REFERENCES staff(id) ON DELETE SET NULL
+    FOREIGN KEY (assigned_to_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
+    FOREIGN KEY (assigned_by_user_id) REFERENCES users(id) ON DELETE SET NULL,
+    FOREIGN KEY (resolved_by_user_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 8b. Complaint History table
+CREATE TABLE IF NOT EXISTS complaint_history (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    complaint_id INT NOT NULL,
+    action VARCHAR(50) NOT NULL,
+    previous_staff_id INT NULL,
+    assigned_staff_id INT NULL,
+    previous_status VARCHAR(50) NULL,
+    new_status VARCHAR(50) NULL,
+    changed_by_user_id INT NULL,
+    notes TEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (complaint_id) REFERENCES complaints(id) ON DELETE CASCADE,
+    FOREIGN KEY (previous_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
+    FOREIGN KEY (assigned_staff_id) REFERENCES staff(id) ON DELETE SET NULL,
+    FOREIGN KEY (changed_by_user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 9. Maintenance table

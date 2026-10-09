@@ -1,0 +1,100 @@
+{% extends 'layouts/dashboard_base.html' %}
+
+{% block title %}Staff Directory | SocietyConnect{% endblock %}
+
+{% block content %}
+<div class="table-container">
+    <div class="table-header-row" style="flex-wrap: wrap; gap: 1rem; align-items: center;">
+        <div>
+            <h1 class="table-title">Staff & Maintenance Personnel</h1>
+            <p style="color: var(--text-secondary); font-size: 0.875rem;">Manage authorized maintenance staff, technicians, cleaners, and security guards</p>
+        </div>
+        <div>
+            <a href="{{ url_for('staff.add_staff') }}" class="btn btn-primary" style="height: 38px; display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box;">
+                + Register Authorized Staff
+            </a>
+        </div>
+    </div>
+
+    <table class="custom-table">
+        <thead>
+            <tr>
+                <th>Personnel</th>
+                <th>Department</th>
+                <th>Designation</th>
+                <th>Status</th>
+                <th>Assigned Tickets</th>
+                <th>Joining Date</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for staff in staff_members %}
+                <tr>
+                    <td>
+                        <strong style="display: block; color: var(--text-primary); font-size: 0.95rem;">{{ staff.name }}</strong>
+                        <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">
+                            📱 {{ staff.contact_phone or 'No phone registered' }}
+                        </span>
+                    </td>
+                    <td>
+                        {% set dept = staff.department or staff.staff_type or 'General' %}
+                        {% if dept == 'Electrical' %}
+                            <span class="badge badge-warning" style="background: #FEF3C7; color: #92400E;">⚡ Electrical</span>
+                        {% elif dept == 'Plumbing' %}
+                            <span class="badge badge-info" style="background: #E0F2FE; color: #075985;">🔧 Plumbing</span>
+                        {% elif dept == 'Security' %}
+                            <span class="badge badge-warning" style="background: #FEE2E2; color: #991B1B;">🛡️ Security</span>
+                        {% elif dept == 'Cleaning' %}
+                            <span class="badge badge-success" style="background: #DCFCE7; color: #166534;">🧹 Cleaning</span>
+                        {% else %}
+                            <span class="badge badge-secondary">🛠️ {{ dept }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <strong style="color: var(--text-primary);">{{ staff.designation or 'Unspecified' }}</strong>
+                    </td>
+                    <td>
+                        {% if staff.is_active %}
+                            <span class="badge badge-success" style="background: #DEF7EC; color: #03543F; border: 1px solid #BCF0DA;">Active</span>
+                        {% else %}
+                            <span class="badge badge-secondary" style="background: #F3F4F6; color: #6B7280; border: 1px solid #E5E7EB;">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span style="font-weight: 600; color: var(--text-primary);">
+                            {{ staff.assigned_complaints|length }} ticket(s)
+                        </span>
+                    </td>
+                    <td>
+                        {{ staff.joining_date.strftime('%Y-%m-%d') if staff.joining_date else 'N/A' }}
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+                            <a href="{{ url_for('staff.edit_staff', staff_id=staff.id) }}" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">Edit</a>
+                            
+                            <form action="{{ url_for('staff.toggle_status', staff_id=staff.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-sm {% if staff.is_active %}btn-secondary{% else %}btn-primary{% endif %}" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;" title="Toggle Active/Inactive">
+                                    {% if staff.is_active %}Deactivate{% else %}Activate{% endif %}
+                                </button>
+                            </form>
+
+                            {% if staff.user_id != current_user.id %}
+                                <form action="{{ url_for('staff.delete_staff', staff_id=staff.id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to remove this staff member?');">
+                                    <button type="submit" class="btn btn-danger btn-sm" style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">Delete</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem 0;">
+                        No staff members found. Click "+ Register Authorized Staff" to onboard plumbers, electricians, and technicians.
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

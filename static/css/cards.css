@@ -6,8 +6,7 @@
 }
 
 .card {
-    background: var(--dark-card);
-    backdrop-filter: var(--glass-blur);
+    background: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: 1.5rem;
@@ -19,9 +18,32 @@
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    border-color: var(--border-hover);
-    box-shadow: 0 15px 35px rgba(99, 102, 241, 0.15);
+    background: var(--card-hover);
+    transform: translateY(-2px);
+    border-color: var(--border-strong);
+    box-shadow: 0 6px 24px rgba(37, 42, 38, 0.09);
+}
+
+a.card {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    display: flex;
+}
+
+a.card:hover,
+a.card:focus {
+    text-decoration: none;
+    color: inherit;
+}
+
+a.card:hover .card-icon {
+    transform: scale(1.08);
+}
+
+a.card:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
 }
 
 .card-header {
@@ -38,10 +60,9 @@
 
 .card-value {
     font-size: 2.25rem;
-    font-weight: 800;
-    background: var(--gradient-accent);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
 }
 
 .card-desc {
@@ -49,13 +70,46 @@
     color: var(--text-muted);
 }
 
+/* Stat Card Icon Base */
 .card-icon {
-    width: 45px;
-    height: 45px;
+    width: 46px;
+    height: 46px;
     border-radius: 12px;
-    background: rgba(99, 102, 241, 0.1);
+    background: var(--stat-default-bg);
+    color: var(--stat-default-icon);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--primary-color);
+    flex-shrink: 0;
+    transition: var(--transition);
+}
+
+.card-icon svg {
+    stroke: currentColor;
+}
+
+/* Domain Specific Stat Icons */
+.card-icon.stat-residents {
+    background-color: var(--stat-residents-bg);
+    color: var(--stat-residents-icon);
+}
+
+.card-icon.stat-visitors {
+    background-color: var(--stat-visitors-bg);
+    color: var(--stat-visitors-icon);
+}
+
+.card-icon.stat-maintenance {
+    background-color: var(--stat-maintenance-bg);
+    color: var(--stat-maintenance-icon);
+}
+
+.card-icon.stat-payments {
+    background-color: var(--stat-payments-bg);
+    color: var(--stat-payments-icon);
+}
+
+.card-icon.stat-complaints {
+    background-color: var(--stat-complaints-bg);
+    color: var(--stat-complaints-icon);
 }

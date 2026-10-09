@@ -1,37 +1,151 @@
 :root {
-    /* Harmony Color Palette */
-    --primary-color: #6366f1;         /* Indigo */
-    --primary-hover: #4f46e5;
-    --primary-rgb: 99, 102, 241;
+    /* Core Brand Color Palette */
+    --primary-color: #2F4A3A;         /* Primary Forest Green */
+    --primary-hover: #243B2E;
+    --primary-active: #1D3025;
     
-    --secondary-color: #ec4899;       /* Pink accent */
-    --secondary-rgb: 236, 72, 153;
+    --secondary-color: #7C9A7A;       /* Secondary Sage Green */
+    --light-sage: #DDE8DA;
+    --very-light-sage: #EEF4EC;
     
-    --dark-bg: #090d16;               /* Rich Deep Midnight Dark */
-    --dark-card: rgba(17, 24, 39, 0.7); /* Translucent Card */
+    --page-bg: #F6F5F0;               /* Warm Cream Page Background */
+    --card-bg: #FFFFFF;               /* Pure Card Background */
+    --card-hover: #FCFCFA;
+    --soft-beige: #EEEAE0;
     
-    --border-color: rgba(255, 255, 255, 0.08);
-    --border-hover: rgba(255, 255, 255, 0.15);
+    --text-primary: #252A26;          /* Main Headings & Primary Text */
+    --text-subheading: #3E4540;       /* Subheadings */
+    --text-secondary: #626862;        /* Normal Body Text */
+    --text-muted: #929892;            /* Muted Information */
     
-    --text-primary: #f3f4f6;          /* Clean white-grey text */
-    --text-muted: #9ca3af;           /* Muted grey */
+    --border-color: #E3E2DC;          /* Standard Border */
+    --border-strong: #D2D4CC;         /* Strong Border */
     
-    /* Semantic Colors */
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --info: #3b82f6;
+    /* Sidebar Palette */
+    --sidebar-bg: #2F4A3A;
+    --sidebar-variation: #263F31;
+    --sidebar-logo-icon: #E9E4D5;
+    --sidebar-logo-text: #F5F2E8;
+    --sidebar-text: #D7DED4;
+    --sidebar-icon: #BFCDBD;
+    --sidebar-hover-bg: #3C5B48;
+    --sidebar-hover-text: #FFFFFF;
+    --sidebar-hover-icon: #E9E4D5;
+    --sidebar-active-bg: #526F5B;
+    --sidebar-active-text: #FFFFFF;
+    --sidebar-active-icon: #E9E4D5;
+    --sidebar-divider: rgba(255, 255, 255, 0.12);
+    --sidebar-user-bg: rgba(255, 255, 255, 0.06);
 
-    /* Fonts & Gradients */
-    --font-sans: 'Outfit', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    --gradient-hero: linear-gradient(135deg, #1e1b4b 0%, #0f172a 100%);
-    --gradient-accent: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
-    --glass-blur: blur(12px);
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Navbar Palette */
+    --navbar-bg: rgba(246, 245, 240, 0.92);
+    --navbar-border: #E3E2DC;
+    --search-bg: #FFFFFF;
+    --search-border: #DDDCD6;
+    --search-focus: #7C9A7A;
+    --search-icon: #626862;
+    --notification-icon: #3E4A40;
+    --notification-badge: #C44536;
+    --profile-avatar-border: #FFFFFF;
+
+    /* Links */
+    --link-color: #3F6B4A;
+    --link-hover: #2F4A3A;
+
+    /* Buttons */
+    --btn-primary-bg: #2F4A3A;
+    --btn-primary-text: #FFFFFF;
+    --btn-primary-hover: #243B2E;
+    --btn-primary-active: #1D3025;
+    --btn-secondary-bg: #EEF4EC;
+    --btn-secondary-text: #2F4A3A;
+    --btn-secondary-border: #DDE8DA;
+    --btn-secondary-hover: #DDE8DA;
+    --btn-outline-border: #7C9A7A;
+    --btn-outline-text: #2F4A3A;
+    --btn-outline-hover-bg: #EEF4EC;
+
+    /* Stat Cards Icon Themes */
+    --stat-default-bg: #EEF4EC;
+    --stat-default-icon: #3F6B4A;
+    --stat-residents-bg: #E7EFE4;
+    --stat-residents-icon: #3F6B4A;
+    --stat-visitors-bg: #F4ECD8;
+    --stat-visitors-icon: #A36B18;
+    --stat-maintenance-bg: #E8EEE6;
+    --stat-maintenance-icon: #49664E;
+    --stat-payments-bg: #F3E7DE;
+    --stat-payments-icon: #9A542E;
+    --stat-complaints-bg: #F6E3E0;
+    --stat-complaints-icon: #B5473A;
+
+    /* Semantic Status System */
+    --success: #3F7A4A;
+    --success-bg: #E7F2E8;
+    --success-strong: #2F6B3A;
     
-    /* Layout Constants */
+    --warning: #A36B18;
+    --warning-bg: #F8EED9;
+    --warning-strong: #9A6515;
+    
+    --danger: #B5473A;
+    --danger-bg: #F8E3E1;
+    --danger-strong: #A33A30;
+    
+    --info: #416A76;
+    --info-bg: #E5EDF0;
+    
+    --pending-bg: #F4ECD8;
+    --pending-text: #946515;
+    
+    --inactive-bg: #ECEDEA;
+    --inactive-text: #747A74;
+
+    /* Table Tokens */
+    --table-bg: #FFFFFF;
+    --table-header-bg: #F1F2ED;
+    --table-header-text: #525852;
+    --table-row-hover: #F7F8F4;
+    --table-border: #E7E6E1;
+    --table-text-primary: #2A302B;
+    --table-text-secondary: #777D77;
+
+    /* Form Tokens */
+    --input-bg: #FFFFFF;
+    --input-border: #D9DAD4;
+    --input-text: #252A26;
+    --input-placeholder: #9B9F9A;
+    --input-hover-border: #AAB7A7;
+    --input-focus-border: #5E7D65;
+    --input-focus-ring: 0 0 0 3px rgba(94, 125, 101, 0.12);
+    --input-disabled-bg: #F1F1ED;
+    --input-disabled-text: #A0A49F;
+
+    /* Modal & Dropdown Tokens */
+    --modal-bg: #FFFFFF;
+    --modal-overlay: rgba(20, 30, 23, 0.45);
+    --dropdown-bg: #FFFFFF;
+    --dropdown-border: #E3E2DC;
+    --dropdown-hover: #F1F4EF;
+    --dropdown-selected: #E8F0E6;
+
+    /* Chart Tokens */
+    --chart-line-primary: #3F6B4A;
+    --chart-line-secondary: #7C9A7A;
+    --chart-accent: #C69B4B;
+    --chart-negative: #C44536;
+    --chart-neutral: #8C948B;
+    --chart-grid: #E6E7E2;
+    --chart-bg: #FFFFFF;
+
+    /* Special Accent Color (Used Sparingly) */
+    --accent-gold: #C69B4B;
+
+    /* Layout & Styling Rules */
+    --font-sans: 'Outfit', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --sidebar-width: 260px;
     --navbar-height: 70px;
-    --border-radius: 16px;
-    --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    --border-radius: 12px;             /* 10px to 14px range per rule 12 */
+    --box-shadow: 0 4px 20px rgba(37, 42, 38, 0.06); /* Subtle soft shadow per spec */
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }

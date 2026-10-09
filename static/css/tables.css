@@ -1,7 +1,6 @@
 .table-container {
-    background: var(--dark-card);
-    backdrop-filter: var(--glass-blur);
-    border: 1px solid var(--border-color);
+    background: var(--table-bg);
+    border: 1px solid var(--table-border);
     border-radius: var(--border-radius);
     padding: 1.5rem;
     overflow-x: auto;
@@ -19,8 +18,9 @@
 }
 
 .table-title {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 700;
+    color: var(--text-primary);
 }
 
 .custom-table {
@@ -30,20 +30,29 @@
 }
 
 .custom-table th {
-    padding: 1rem;
-    font-size: 0.85rem;
-    font-weight: 600;
+    background: var(--table-header-bg);
+    color: var(--table-header-text);
+    padding: 0.85rem 1rem;
+    font-size: 0.825rem;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: var(--text-muted);
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--table-border);
+}
+
+.custom-table th:first-child {
+    border-top-left-radius: 8px;
+}
+.custom-table th:last-child {
+    border-top-right-radius: 8px;
 }
 
 .custom-table td {
     padding: 1rem;
     font-size: 0.9rem;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-primary);
+    border-bottom: 1px solid var(--table-border);
+    color: var(--table-text-primary);
+    background-color: var(--table-bg);
 }
 
 .custom-table tr:last-child td {
@@ -51,39 +60,57 @@
 }
 
 .custom-table tr:hover td {
-    background: rgba(255, 255, 255, 0.02);
+    background-color: var(--table-row-hover);
 }
 
-/* Badge System */
+.table-text-secondary {
+    color: var(--table-text-secondary);
+    font-size: 0.825rem;
+}
+
+/* Status Badge System */
 .badge {
     display: inline-flex;
     align-items: center;
-    padding: 0.25rem 0.75rem;
+    padding: 0.3rem 0.75rem;
     border-radius: 50px;
     font-size: 0.75rem;
     font-weight: 600;
+    line-height: 1;
 }
 
 .badge-success {
-    background: rgba(16, 185, 129, 0.15);
+    background-color: var(--success-bg);
     color: var(--success);
-    border: 1px solid rgba(16, 185, 129, 0.3);
+    border: 1px solid #CDE3CE;
 }
 
 .badge-warning {
-    background: rgba(245, 158, 11, 0.15);
+    background-color: var(--warning-bg);
     color: var(--warning);
-    border: 1px solid rgba(245, 158, 11, 0.3);
+    border: 1px solid #EEDBB7;
 }
 
 .badge-danger {
-    background: rgba(239, 68, 68, 0.15);
+    background-color: var(--danger-bg);
     color: var(--danger);
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    border: 1px solid #F5C7C3;
 }
 
 .badge-info {
-    background: rgba(59, 130, 246, 0.15);
+    background-color: var(--info-bg);
     color: var(--info);
-    border: 1px solid rgba(59, 130, 246, 0.3);
+    border: 1px solid #C9DEE5;
+}
+
+.badge-pending {
+    background-color: var(--pending-bg);
+    color: var(--pending-text);
+    border: 1px solid #EEDBB7;
+}
+
+.badge-inactive {
+    background-color: var(--inactive-bg);
+    color: var(--inactive-text);
+    border: 1px solid #DCDED9;
 }

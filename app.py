@@ -14,10 +14,12 @@ from routes.visitor import visitor_bp
 from routes.complaint import complaint_bp
 from routes.maintenance import maintenance_bp
 from routes.notice import notice_bp
+from routes.vehicle import vehicle_bp
+from routes.staff import staff_bp
 
-def create_app():
+def create_app(config_class=Config):
     app = Flask(__name__)
-    app.config.from_object(Config)
+    app.config.from_object(config_class)
 
     # Ensure Upload Folder exists
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -44,6 +46,8 @@ def create_app():
     app.register_blueprint(complaint_bp)
     app.register_blueprint(maintenance_bp)
     app.register_blueprint(notice_bp)
+    app.register_blueprint(vehicle_bp)
+    app.register_blueprint(staff_bp)
 
     # Error Handlers
     @app.errorhandler(401)
@@ -74,4 +78,4 @@ if __name__ == '__main__':
         except Exception as e:
             print(f"Skipping auto db.create_all() since DB connection may need setup: {e}")
 
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=True)
