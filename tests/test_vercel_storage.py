@@ -70,6 +70,14 @@ class TestVercelStorageConfig(unittest.TestCase):
         response = client.get('/auth/login')
         self.assertEqual(response.status_code, 200)
 
+    def test_app_py_redirects_to_home(self):
+        """Requests to /app.py gracefully redirect to root (/) instead of returning 404."""
+        app = create_app(TestConfig)
+        client = app.test_client()
+        response = client.get('/app.py')
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.headers.get('Location'), '/')
+
     def test_uploads_route_404_for_missing_file(self):
         """The /uploads/<filename> route returns 404 for nonexistent files."""
         app = create_app(TestConfig)

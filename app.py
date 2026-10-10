@@ -1,6 +1,6 @@
 import os
 import tempfile
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, render_template, send_from_directory, redirect, url_for
 from flask_login import LoginManager
 from config import Config
 from models.db import db
@@ -92,6 +92,11 @@ def create_app(config_class=Config):
         if os.path.exists(os.path.join(static_uploads, filename)):
             return send_from_directory(static_uploads, filename)
         return render_template('errors/404.html'), 404
+
+    # Graceful fallback for deployments or proxies requesting /app.py directly
+    @app.route('/app.py')
+    def app_py_fallback():
+        return redirect(url_for('home.index'))
 
     return app
 
