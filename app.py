@@ -1,5 +1,6 @@
 import os
-from flask import Flask, render_template
+import tempfile
+from flask import Flask, render_template, send_from_directory
 from flask_login import LoginManager
 from config import Config
 from models.db import db
@@ -21,8 +22,23 @@ def create_app(config_class=Config):
     app = Flask(__name__)
     app.config.from_object(config_class)
 
-    # Ensure Upload Folder exists
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    # Ensure Upload Folder exists safely without failing on read-only filesystems (e.g., Vercel /var/task)
+    upload_folder = app.config.get('UPLOAD_FOLDER')
+    if upload_folder:
+        try:
+            os.makedirs(upload_folder, exist_ok=True)
+        except (OSError, PermissionError) as e:
+            # Fallback to temp directory if specified location is read-only
+            fallback_dir = os.path.join(tempfile.gettempdir(), 'society_connect_uploads')
+            try:
+                os.makedirs(fallback_dir, exist_ok=True)
+                app.config['UPLOAD_FOLDER'] = fallback_dir
+            except Exception as fb_err:
+                app.logger.warning(
+                    f"Unable to create upload folder '{upload_folder}': {e}. "
+                    f"Fallback to '{fallback_dir}' also failed: {fb_err}"
+                )
+                app.config['UPLOAD_FOLDER'] = tempfile.gettempdir()
 
     # Initialize extensions
     db.init_app(app)
@@ -65,6 +81,17 @@ def create_app(config_class=Config):
     @app.errorhandler(500)
     def internal_error(e):
         return render_template('errors/500.html'), 500
+
+    # Route for serving uploaded files (supports local static/uploads and temporary uploads)
+    @app.route('/uploads/<path:filename>')
+    def uploaded_file(filename):
+        folder = app.config.get('UPLOAD_FOLDER')
+        if folder and os.path.exists(os.path.join(folder, filename)):
+            return send_from_directory(folder, filename)
+        static_uploads = os.path.join(app.root_path, 'static', 'uploads')
+        if os.path.exists(os.path.join(static_uploads, filename)):
+            return send_from_directory(static_uploads, filename)
+        return render_template('errors/404.html'), 404
 
     return app
 
